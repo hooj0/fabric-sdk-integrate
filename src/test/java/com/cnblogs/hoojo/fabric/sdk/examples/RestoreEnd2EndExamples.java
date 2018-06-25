@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.nio.file.Paths;
@@ -45,7 +44,6 @@ import org.hyperledger.fabric.sdk.BlockInfo.EnvelopeInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo;
 import org.hyperledger.fabric.sdk.BlockInfo.TransactionEnvelopeInfo.TransactionActionInfo;
 import org.hyperledger.fabric.sdk.BlockchainInfo;
-import org.hyperledger.fabric.sdk.ChaincodeEndorsementPolicy;
 import org.hyperledger.fabric.sdk.ChaincodeEvent;
 import org.hyperledger.fabric.sdk.ChaincodeEventListener;
 import org.hyperledger.fabric.sdk.ChaincodeID;
@@ -57,8 +55,6 @@ import org.hyperledger.fabric.sdk.ChannelConfiguration;
 import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric.sdk.EventHub;
 import org.hyperledger.fabric.sdk.HFClient;
-import org.hyperledger.fabric.sdk.InstallProposalRequest;
-import org.hyperledger.fabric.sdk.InstantiateProposalRequest;
 import org.hyperledger.fabric.sdk.Orderer;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.Peer.PeerRole;
@@ -87,10 +83,11 @@ import com.cnblogs.hoojo.fabric.sdk.log.ApplicationLogging;
 import com.cnblogs.hoojo.fabric.sdk.model.KeyValueFileStore;
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
+import com.cnblogs.hoojo.fabric.sdk.util.Util;
 import com.google.common.collect.Lists;
 
 /**
- * `end 2 end` JavaSDK use API Examples
+ * `end 2 end` JavaSDK use API RestoreEnd2EndExamples
  * 
  * @author hoojo
  * @createDate 2018年6月12日 下午4:31:43
@@ -132,7 +129,7 @@ public class RestoreEnd2EndExamples extends ApplicationLogging {
 		TX_EXPECTED.put("writeset1", "Missing writeset for channel bar block 1");
 	}
 
-	String exampleName = "End2endIT";
+	String exampleName = "End2End Example Restore";
 
 	String CHAIN_CODE_FILEPATH = "sdkintegration/gocc/sample1";
 	String CHAIN_CODE_NAME = "example_cc_go";
@@ -505,135 +502,6 @@ public class RestoreEnd2EndExamples extends ApplicationLogging {
         }
         
         return handle;
-	}
-	
-	/**
-	 * 安装Chaincode智能合约
-	 * @author hoojo
-	 * @createDate 2018年6月15日 上午11:52:27
-	 */
-	private void installChaincode(ChaincodeID chaincodeId, HFClient client, Channel channel) throws Exception {
-		logger.info("通道：{} 安装chaincode: {}", channel.getName(), chaincodeId);
-		
-		Collection<ProposalResponse> successful = new LinkedList<>();
-        Collection<ProposalResponse> failed = new LinkedList<>();
-        
-        boolean isFooChain = FOO_CHANNEL_NAME.equals(channel.getName());
-        
-        /***************** 构建安装chaincode请求 *******************/
-		InstallProposalRequest installRequest = client.newInstallProposalRequest();
-    	installRequest.setChaincodeID(chaincodeId);
-    	installRequest.setChaincodeVersion(CHAIN_CODE_VERSION);
-    	installRequest.setChaincodeLanguage(CHAIN_CODE_LANG);
-    	
-    	if (isFooChain) { // foo cc 直接从gopath目录下安装
-    		File chaincodeFile = Paths.get(CONFIG_ROOT_PATH, CHAIN_CODE_FILEPATH).toFile();
-    		logger.debug("Foo-Chaincode path: {}", chaincodeFile.getAbsolutePath());
-    		installRequest.setChaincodeSourceLocation(chaincodeFile);
-    	} else {
-    		InputStream stream = null;
-    		if (CHAIN_CODE_LANG.equals(Type.GO_LANG)) {
-    			File chaincodeFile = Paths.get(CONFIG_ROOT_PATH, CHAIN_CODE_FILEPATH, "src", CHAIN_CODE_PATH).toFile();
-    			logger.debug("Chaincode path: {}", chaincodeFile.getAbsolutePath());
-    			stream = Util.generateTarGzInputStream(chaincodeFile, Paths.get("src", CHAIN_CODE_PATH).toString());
-            } else {
-            	File chaincodeFile = Paths.get(CONFIG_ROOT_PATH, CHAIN_CODE_FILEPATH).toFile();
-            	logger.debug("Chaincode path: {}", chaincodeFile.getAbsolutePath());
-            	stream = Util.generateTarGzInputStream(chaincodeFile, "src");
-            }
-    		
-    		installRequest.setChaincodeInputStream(stream);
-    	}
-    	
-    	/************************ 发送安装请求 ***************************/
-    	// 只有来自同一组织的客户端才能发出安装请求
-    	Collection<Peer> peers = channel.getPeers();
-    	Collection<ProposalResponse> responses = client.sendInstallProposal(installRequest, peers);
-    	logger.info("向channel.Peers节点——发送安装chaincode请求：{}", json(installRequest));
-    	
-    	for (ProposalResponse response : responses) {
-    		if (response.getStatus() == Status.SUCCESS) {
-    			successful.add(response);
-    			print("成功安装 Txid: %s , peer: %s", response.getTransactionID(), response.getPeer().getName());
-    		} else {
-    			failed.add(response);
-    			print("失败安装 Txid: %s , peer: %s", response.getTransactionID(), response.getPeer().getName());
-    		}
-    	}
-    	
-    	logger.info("接收安装请求数量： {}， 成功安装并验证通过数量: {} . 失败数量: {}", peers.size(), successful.size(), failed.size());
-    	if (failed.size() > 0) {
-            ProposalResponse first = failed.iterator().next();
-            throw new RuntimeException("没有足够的 endorsers 安装 :" + successful.size() + "，  " + first.getMessage());
-        }
-	}
-	
-	/**
-	 * 实例化Chaincode
-	 * @author hoojo
-	 * @createDate 2018年6月15日 上午11:54:46
-	 */
-	private Collection<ProposalResponse> instantiateChaincode(ChaincodeID chaincodeId, HFClient client, Channel channel, int money) throws Exception {
-		logger.info("在通道：{} 实例化Chaincode：{}", channel.getName(), chaincodeId);
-		
-		Collection<ProposalResponse> successful = new LinkedList<>();
-        Collection<ProposalResponse> failed = new LinkedList<>();
-        
-        boolean isFooChain = FOO_CHANNEL_NAME.equals(channel.getName());
-        
-		// 注意安装chaincode不需要事务不需要发送给 Orderers
-    	InstantiateProposalRequest instantiateRequest = client.newInstantiationProposalRequest();
-    	instantiateRequest.setChaincodeID(chaincodeId);
-    	instantiateRequest.setChaincodeVersion(CHAIN_CODE_VERSION);
-    	instantiateRequest.setChaincodeLanguage(CHAIN_CODE_LANG);
-    	instantiateRequest.setProposalWaitTime(config.getProposalWaitTime());
-    	instantiateRequest.setFcn("init");
-		instantiateRequest.setArgs("a", "500", "b", String.valueOf(200 + money));
-		
-		Map<String, byte[]> data = new HashMap<>();
-		data.put("HyperLedgerFabric", "InstantiateProposalRequest:JavaSDK".getBytes(UTF_8));
-		data.put("method", "InstantiateProposalRequest".getBytes(UTF_8));
-		instantiateRequest.setTransientMap(data);
-		
-		// 设置背书策略
-		File policyFile = new File(CONFIG_ROOT_PATH + "/sdkintegration/chaincodeendorsementpolicy.yaml");
-		logger.info("背书策略文件：{}", policyFile.getAbsolutePath());
-		ChaincodeEndorsementPolicy endorsementPolicy = new ChaincodeEndorsementPolicy();
-		endorsementPolicy.fromYamlFile(policyFile);
-		instantiateRequest.setChaincodeEndorsementPolicy(endorsementPolicy);
-		
-        // 通过指定对等节点和使用通道上的方式发送请求响应
-		Collection<ProposalResponse> responses = null;
-        if (isFooChain) {
-        	responses = channel.sendInstantiationProposal(instantiateRequest, channel.getPeers());
-        	logger.info("向channel.Peers节点——发送实例化Chaincode请求：{}", json(instantiateRequest));
-        } else {
-        	responses = channel.sendInstantiationProposal(instantiateRequest);
-        	logger.info("向CHAINCODE_QUERY/ENDORSING_PEER Peer——发送实例化Chaincode请求：{}", json(instantiateRequest));
-        }
-		logger.info("发送实例化Chaincode参数：{}", instantiateRequest.getArgs());
-        
-        for (ProposalResponse response : responses) {
-            if (response.isVerified() && response.getStatus() == ProposalResponse.Status.SUCCESS) {
-                successful.add(response);
-                print("成功实例化 Txid: %s , peer: %s", response.getTransactionID(), response.getPeer().getName());
-            } else {
-                failed.add(response);
-                print("失败实例化 Txid: %s , peer: %s", response.getTransactionID(), response.getPeer().getName());
-            }
-        }
-        logger.info("接收实例化请求数量： {}， 成功安装并验证通过数量: {}， 失败数量: {}", responses.size(), successful.size(), failed.size());
-        
-        if (failed.size() > 0) {
-            for (ProposalResponse fail : failed) {
-                print("没有足够的 endorsers 实例化:" + successful.size() + "，endorser failed： " + fail.getMessage() + ", peer：" + fail.getPeer());
-            }
-            
-            ProposalResponse first = failed.iterator().next();
-            throw new RuntimeException("没有足够的 endorsers 实例化:" + successful.size() + "，endorser failed： " + first.getMessage() + ", verified：" + first.isVerified());
-        }
-        
-        return successful;
 	}
 	
 	/**

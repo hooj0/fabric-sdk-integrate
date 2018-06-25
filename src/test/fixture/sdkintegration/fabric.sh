@@ -45,8 +45,7 @@ function up(){
     docker-compose up --force-recreate ca0 ca1 peer1.org1.example.com peer1.org2.example.com ccenv
   else
     docker-compose up --force-recreate
-fi
-
+  fi
 }
 
 function down(){

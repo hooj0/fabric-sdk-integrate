@@ -14,7 +14,7 @@
  *
  */
 
-package com.cnblogs.hoojo.fabric.sdk.examples;
+package com.cnblogs.hoojo.fabric.sdk.util;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -35,7 +35,7 @@ import org.hyperledger.fabric.sdk.helper.Utils;
 
 import static java.lang.String.format;
 
-class Util {
+public class Util {
 
 	/**
 	 * Private constructor to prevent instantiation.

@@ -87,6 +87,7 @@ import com.cnblogs.hoojo.fabric.sdk.log.ApplicationLogging;
 import com.cnblogs.hoojo.fabric.sdk.model.KeyValueFileStore;
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
+import com.cnblogs.hoojo.fabric.sdk.util.Util;
 import com.google.common.collect.Lists;
 
 /**
@@ -132,7 +133,7 @@ public class End2EndExamples extends ApplicationLogging {
 		TX_EXPECTED.put("writeset1", "Missing writeset for channel bar block 1");
 	}
 
-	String exampleName = "End2endIT";
+	String exampleName = "End2End Example";
 
 	String CHAIN_CODE_FILEPATH = "sdkintegration/gocc/sample1";
 	String CHAIN_CODE_NAME = "example_cc_go";
@@ -161,7 +162,7 @@ public class End2EndExamples extends ApplicationLogging {
 		
 		// 使用本地文件做key-value数据保存的持久化操作
 		if (storeFile.exists()) { // For testing start fresh
-			//storeFile.delete();
+			storeFile.delete();
 		}
 		
 		out("Create KeyValue File Store");
@@ -1103,34 +1104,29 @@ public class End2EndExamples extends ApplicationLogging {
 		/** 剔除已选择 Orderer */
 		orderers.remove(anOrderer);
         
-		out("Cache find channel: %s", channelName);
-		Channel channel = store.getChannel(client, channelName);
+		out("Created channel: %s", channelName);
+		/** 创建通道 */
+		Channel channel = createChannel(channelName, anOrderer, client, org);
 		
-		if (channel == null) {
-			out("Created channel: %s", channelName);
-			/** 创建通道 */
-			channel = createChannel(channelName, anOrderer, client, org);
-
-			out("Created Peer Join Channel: %s", channelName);
-			/** 创建 peer，channel加入Peer  */
-			createPeerThenJoin(channel, client, org);
-			
-			out("Add Orderer to Channel: %s", channelName);
-			/** 为通道添加其他 Orderer服务 */
-			for (Orderer orderer : orderers) {
-				channel.addOrderer(orderer);
-				logger.trace("Add Channel Orderer: {}->{}", orderer.getName(), orderer.getUrl());
-			}
-			
-			out("Add EventHub: %s", channelName);
-			/** 添加事件总线 */
-			addEventHub(channel, client, org);
-			
-			out("initialize channel: %s", channelName);
-			/** 初始化 */
-			channel.initialize();
-			out("Organization: %s , Finished initialization channel： %s", org.getName(), channelName);
+		out("Created Peer Join Channel: %s", channelName);
+		/** 创建 peer，channel加入Peer  */
+		createPeerThenJoin(channel, client, org);
+		
+		out("Add Orderer to Channel: %s", channelName);
+		/** 为通道添加其他 Orderer服务 */
+		for (Orderer orderer : orderers) {
+			channel.addOrderer(orderer);
+			logger.trace("Add Channel Orderer: {}->{}", orderer.getName(), orderer.getUrl());
 		}
+		
+		out("Add EventHub: %s", channelName);
+		/** 添加事件总线 */
+		addEventHub(channel, client, org);
+		
+		out("initialize channel: %s", channelName);
+		/** 初始化 */
+		channel.initialize();
+		out("Organization: %s , Finished initialization channel： %s", org.getName(), channelName);
         
 		return checkChannelSerialize(channel, client);
 	}
