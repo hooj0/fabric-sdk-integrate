@@ -35,8 +35,7 @@ import com.cnblogs.hoojo.fabric.sdk.util.Util;
 import com.google.common.base.Optional;
 
 /**
- * <b>function:</b> chaincode 管理服务，包括 install、upgrade、instantiate
- * 
+ * chaincode 管理服务，包括 install、upgrade、instantiate
  * @author hoojo
  * @createDate 2018年6月22日 下午4:51:01
  * @file ChaincodeManager.java
@@ -60,7 +59,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 安装Chaincode智能合约
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
@@ -74,11 +72,9 @@ public class ChaincodeManager extends ApplicationLogging {
 			logger.debug("Foo-Chaincode path: {}", chaincodeSourceFile.getAbsolutePath());
 		} else {
 			if (language.equals(Type.GO_LANG)) {
-				File chaincodeFile = Paths
-						.get(config.getRootPath(), config.getChaincodePath(), "src", chaincodeId.getPath()).toFile();
+				File chaincodeFile = Paths.get(config.getRootPath(), config.getChaincodePath(), "src", chaincodeId.getPath()).toFile();
 				logger.debug("Chaincode path: {}", chaincodeFile.getAbsolutePath());
-				chaincodeStream = Util.generateTarGzInputStream(chaincodeFile,
-						Paths.get("src", chaincodeId.getPath()).toString());
+				chaincodeStream = Util.generateTarGzInputStream(chaincodeFile, Paths.get("src", chaincodeId.getPath()).toString());
 			} else {
 				File chaincodeFile = Paths.get(config.getRootPath(), config.getChaincodePath()).toFile();
 				logger.debug("Chaincode path: {}", chaincodeFile.getAbsolutePath());
@@ -103,7 +99,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 通过chaincode文件流，安装Chaincode智能合约
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
@@ -115,7 +110,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 安装Chaincode智能合约
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
@@ -166,7 +160,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 实例化Chaincode
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:54:46
 	 */
@@ -178,7 +171,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 实例化Chaincode
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:54:46
 	 */
@@ -247,7 +239,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 升级Chaincode
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:50:11
 	 */
@@ -256,6 +247,11 @@ public class ChaincodeManager extends ApplicationLogging {
 		return upgradeChaincode(getChaincodeEndorsementPolicy(endorsementPolicyYamlFilePath), chaincodeId, userCtx, func, args);
 	}
 
+	/**
+	 * 设置背书策略配置
+	 * @author hoojo
+	 * @createDate 2018年6月25日 下午1:02:33
+	 */
 	private ChaincodeEndorsementPolicy getChaincodeEndorsementPolicy(String endorsementPolicyYamlFilePath) throws Exception {
 		File policyFile = Paths.get(config.getRootPath(), endorsementPolicyYamlFilePath).toFile();
 		logger.info("背书策略文件：{}", policyFile.getAbsolutePath());
@@ -268,7 +264,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 升级Chaincode
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:50:11
 	 */
@@ -331,7 +326,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 检查Chaincode在peer上是否成功安装
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:49:01
 	 */
@@ -362,7 +356,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 检查Chaincode在channel上是否实例化
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:48:29
 	 */
@@ -376,9 +369,7 @@ public class ChaincodeManager extends ApplicationLogging {
 			logger.debug("已实例化 chaincode：{}", chaincodeInfo);
 
 			if (chaincodeId.getPath() != null) {
-				found = chaincodeId.getName().equals(chaincodeInfo.getName())
-						&& chaincodeId.getPath().equals(chaincodeInfo.getPath())
-						&& chaincodeId.getVersion().equals(chaincodeInfo.getVersion());
+				found = chaincodeId.getName().equals(chaincodeInfo.getName()) && chaincodeId.getPath().equals(chaincodeInfo.getPath()) && chaincodeId.getVersion().equals(chaincodeInfo.getVersion());
 				if (found) {
 					break;
 				}
@@ -395,7 +386,6 @@ public class ChaincodeManager extends ApplicationLogging {
 
 	/**
 	 * 检查Chaincode是否在通道上成功安装和实例化
-	 * 
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:47:40
 	 */
