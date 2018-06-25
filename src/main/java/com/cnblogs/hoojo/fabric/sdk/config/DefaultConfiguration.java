@@ -348,17 +348,17 @@ public class DefaultConfiguration {
 
 	/** 节点配置 */
 	public Properties getPeerProperties(String name) {
-		return getEndPointProperties("peer", name);
+		return getTLSCertProperties("peer", name);
 	}
 
 	/** orderer 服务配置 */
 	public Properties getOrdererProperties(String name) {
-		return getEndPointProperties("orderer", name);
+		return getTLSCertProperties("orderer", name);
 	}
 	
 	/** 事件机制配置 */
 	public Properties getEventHubProperties(String name) {
-		return getEndPointProperties("peer", name); // uses same as named peer
+		return getTLSCertProperties("peer", name); // uses same as named peer
 	}
 	
 	private String getDomainName(final String name) {
@@ -370,7 +370,7 @@ public class DefaultConfiguration {
 		}
 	}
 
-	public Properties getEndPointProperties(final String type, final String name) {
+	public Properties getTLSCertProperties(final String type, final String name) {
 		Properties props = new Properties();
 
 		final String domainName = getDomainName(name);
@@ -408,7 +408,7 @@ public class DefaultConfiguration {
 		props.setProperty("sslProvider", "openSSL");
 		props.setProperty("negotiationType", "TLS");
 		
-		logger.debug("EndPointProperties: {}", props);
+		logger.debug("getTLSCertProperties: {}", props);
 
 		return props;
 	}
@@ -435,6 +435,14 @@ public class DefaultConfiguration {
 	/** 通道配置 */
 	public String getChannelPath() {
 		return "src/test/fixture/sdkintegration/e2e-2Orgs/" + FABRIC_CONFIG_GEN_VERSION;
+	}
+	
+	public String getRootPath() {
+		return "src/test/fixture/";
+	}
+	
+	public String getChaincodePath() {
+		return "";
 	}
 
 	/** 
