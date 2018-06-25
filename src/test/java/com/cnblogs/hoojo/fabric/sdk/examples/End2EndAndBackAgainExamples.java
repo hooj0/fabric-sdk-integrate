@@ -63,9 +63,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.cnblogs.hoojo.fabric.sdk.config.DefaultConfiguration;
-import com.cnblogs.hoojo.fabric.sdk.model.KeyValueFileStore;
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
+import com.cnblogs.hoojo.fabric.sdk.persistence.KeyValueFileStore;
 import com.cnblogs.hoojo.fabric.sdk.util.TestUtils;
 import com.google.gson.Gson;
 

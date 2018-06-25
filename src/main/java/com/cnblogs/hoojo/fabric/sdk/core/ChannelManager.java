@@ -21,8 +21,8 @@ import org.hyperledger.fabric.sdk.Peer.PeerRole;
 
 import com.cnblogs.hoojo.fabric.sdk.config.DefaultConfiguration;
 import com.cnblogs.hoojo.fabric.sdk.log.ApplicationLogging;
-import com.cnblogs.hoojo.fabric.sdk.model.KeyValueFileStore;
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
+import com.cnblogs.hoojo.fabric.sdk.persistence.KeyValueFileStore;
 import com.google.common.collect.Lists;
 
 /**

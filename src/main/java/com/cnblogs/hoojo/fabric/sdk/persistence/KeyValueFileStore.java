@@ -1,4 +1,4 @@
-package com.cnblogs.hoojo.fabric.sdk.model;
+package com.cnblogs.hoojo.fabric.sdk.persistence;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cnblogs.hoojo.fabric.sdk.common.AbstractFabricObject;
+import com.cnblogs.hoojo.fabric.sdk.model.Organization;
+import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
 
 /**
  * 本地文件键值存储系统 ，做数据持久化存储。可以用redis、db等其他方式实现

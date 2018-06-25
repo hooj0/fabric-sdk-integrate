@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cnblogs.hoojo.fabric.sdk.common.AbstractFabricObject;
+import com.cnblogs.hoojo.fabric.sdk.persistence.KeyValueFileStore;
 
 import io.netty.util.internal.StringUtil;
 
