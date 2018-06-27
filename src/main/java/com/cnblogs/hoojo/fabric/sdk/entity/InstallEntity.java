@@ -17,15 +17,22 @@ import org.hyperledger.fabric.sdk.TransactionRequest.Type;
  * @email hoojo_@126.com
  * @version 1.0
  */
-public class InstallChaincode extends ChaincodeEntity {
+public class InstallEntity extends ChaincodeEntity {
 	
+	/** 在升级chaincode时，安装不同的版本 */
+	private String chaincodeVersion;
 	/** chaincode source code file， chaincodeSourceFile 和  chaincodeSourceStream 二选一*/
 	private File chaincodeSourceFile;
 	/** chaincode source code file stream， chaincodeSourceFile 和  chaincodeSourceStream 二选一 */
 	private InputStream chaincodeSourceStream;
 	
-	public InstallChaincode(ChaincodeID chaincodeId, Type language) {
+	public InstallEntity(ChaincodeID chaincodeId, Type language) {
 		super(chaincodeId, language);
+	}
+	
+	public InstallEntity(ChaincodeID chaincodeId, Type language, String chaincodeVersion) {
+		super(chaincodeId, language);
+		this.chaincodeVersion = chaincodeVersion;
 	}
 
 	public File getChaincodeSourceFile() {
@@ -42,5 +49,13 @@ public class InstallChaincode extends ChaincodeEntity {
 
 	public void setChaincodeSourceStream(InputStream chaincodeSourceStream) {
 		this.chaincodeSourceStream = chaincodeSourceStream;
+	}
+
+	public String getChaincodeVersion() {
+		return chaincodeVersion;
+	}
+
+	public void setChaincodeVersion(String chaincodeVersion) {
+		this.chaincodeVersion = chaincodeVersion;
 	}
 }

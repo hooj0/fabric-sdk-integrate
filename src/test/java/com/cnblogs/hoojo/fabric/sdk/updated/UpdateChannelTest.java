@@ -46,7 +46,7 @@ import com.cnblogs.hoojo.fabric.sdk.config.DefaultConfiguration;
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
 import com.cnblogs.hoojo.fabric.sdk.persistence.KeyValueFileStore;
-import com.cnblogs.hoojo.fabric.sdk.util.Util;
+import com.cnblogs.hoojo.fabric.sdk.util.GzipUtils;
 
 /**
  * Update channel scenario
@@ -172,8 +172,8 @@ public class UpdateChannelTest {
             // 要更改通道，我们需要使用orderer管理员确认
             // private key: src/test/fixture/sdkintegration/e2e-2Orgs/channel/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/f1a9a940f57419a18a83a852884790d59b378281347dd3d4a88c2b820a0f70c9_sk
             // certificate:  src/test/fixture/sdkintegration/e2e-2Orgs/channel/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem
-            File privateKeyFile = Util.findFileSk(Paths.get("src/test/fixture/sdkintegration/e2e-2Orgs/" + DefaultConfiguration.FABRIC_CONFIG_GEN_VERSION + "/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/").toFile());
-            File certificateFile = Paths.get("src/test/fixture/sdkintegration/e2e-2Orgs/" + DefaultConfiguration.FABRIC_CONFIG_GEN_VERSION + "/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem").toFile();
+            File privateKeyFile = GzipUtils.findFileSk(Paths.get("src/test/fixture/sdkintegration/e2e-2Orgs/" + config.getFabricConfigGeneratorVersion() + "/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/").toFile());
+            File certificateFile = Paths.get("src/test/fixture/sdkintegration/e2e-2Orgs/" + config.getFabricConfigGeneratorVersion() + "/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem").toFile();
             final String orgName = org.getName();
             final OrganizationUser ordererAdmin = store.getMember(orgName + "OrderAdmin", orgName, "OrdererMSP", privateKeyFile, certificateFile);
 
@@ -238,9 +238,9 @@ public class UpdateChannelTest {
 		final String domain = org.getDomainName();
 		
 		// src/test/fixture/sdkintegration/e2e-2Orgs/channel/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/
-		File keydir = Paths.get(config.getChannelPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/keystore", domain)).toFile();
-		File privateKeyFile = Util.findFileSk(keydir);
-		File certificateFile = Paths.get(config.getChannelPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/signcerts/Admin@%s-cert.pem", domain, domain)).toFile();
+		File keydir = Paths.get(config.getCryptoTxConfigRootPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/keystore", domain)).toFile();
+		File privateKeyFile = GzipUtils.findFileSk(keydir);
+		File certificateFile = Paths.get(config.getCryptoTxConfigRootPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/signcerts/Admin@%s-cert.pem", domain, domain)).toFile();
 
 		// 从缓存或store中获取用户
 		OrganizationUser peerAdmin = store.getMember(orgName + "Admin", orgName, mspid, privateKeyFile, certificateFile);

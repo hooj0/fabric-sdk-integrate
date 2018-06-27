@@ -1,5 +1,7 @@
 package com.cnblogs.hoojo.fabric.sdk.config;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
 /**
@@ -19,5 +21,19 @@ public class DefaultConfigurationTest {
 	@Test
 	public void testDefaultConfig() {
 		System.out.println(DefaultConfiguration.getConfig());
+	}
+	
+	@Test
+	public void testBasicConfig() {
+		DefaultConfiguration config = DefaultConfiguration.getConfig();
+		
+		assertEquals("src/test/fixture/sdkintegration", config.getCommonConfigRootPath());
+		assertEquals("v1.0", config.getFabricConfigGeneratorVersion());
+		assertEquals("src/test/fixture/sdkintegration/e2e-2Orgs/v1.0".replaceAll("/", "\\\\"), config.getCryptoTxConfigRootPath());
+		assertEquals("src/test/fixture/sdkintegration/gocc/sample1".replaceAll("/", "\\\\"), config.getChaincodePath());
+		//assertEquals("src/test/fixture/sdkintegration/e2e-2Orgs/v1.0/channel-artifacts".replaceAll("/", "\\\\"), config.getChannelPath());
+		assertEquals("src/test/fixture/sdkintegration/chaincodeendorsementpolicy.yaml".replaceAll("/", "\\\\"), config.getEndorsementPolicyFilePath());
+		assertEquals("src/test/fixture/sdkintegration/network_configs".replaceAll("/", "\\\\"), config.getNetworkConfigDirFilePath());
+		
 	}
 }

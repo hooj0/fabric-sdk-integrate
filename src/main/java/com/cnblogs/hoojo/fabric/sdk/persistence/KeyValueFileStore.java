@@ -121,6 +121,7 @@ public class KeyValueFileStore extends AbstractFabricObject {
 		String memberStoreKey = OrganizationUser.toStoreKey(name, org);
 		OrganizationUser user = members.get(memberStoreKey);
 		if (null != user) {
+			logger.debug("从缓存获取Member：{}", user);
 			return user;
 		}
 		
@@ -254,6 +255,7 @@ public class KeyValueFileStore extends AbstractFabricObject {
 	 * @throws InvalidArgumentException
 	 */
 	public void saveChannel(Channel channel) throws IOException, InvalidArgumentException {
+		logger.debug("保存通道到缓存: {}", channel.getName());;
 		set("channel." + channel.getName(), Hex.toHexString(channel.serializeChannel()));
 	}
 
@@ -274,6 +276,9 @@ public class KeyValueFileStore extends AbstractFabricObject {
 		String channelHex = get("channel." + name);
 		if (channelHex != null) {
 			channel = client.deSerializeChannel(Hex.decode(channelHex));
+			logger.debug("恢复通道：{}， channel:{}", name, channel);
+		} else {
+			logger.debug("没有恢复通道：{}", name);
 		}
 		
 		return channel;

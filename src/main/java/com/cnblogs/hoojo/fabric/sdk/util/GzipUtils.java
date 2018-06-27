@@ -31,21 +31,19 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.hyperledger.fabric.sdk.helper.Utils;
 
 import static java.lang.String.format;
 
-public class Util {
+public class GzipUtils {
 
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
-	private Util() {
+	private GzipUtils() {
 	}
 
 	/**
 	 * Generate a targz inputstream from source folder.
-	 *
 	 * @param src
 	 *            Source location
 	 * @param pathPrefix
@@ -53,34 +51,27 @@ public class Util {
 	 * @return return inputstream.
 	 * @throws IOException
 	 */
-	public static InputStream generateTarGzInputStream(File src, String pathPrefix) throws IOException {
-		File sourceDirectory = src;
-
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(500000);
-
+	@SuppressWarnings("deprecation")
+	public static InputStream generateTarGzInputStream(File sourceDirectory, String pathPrefix) throws IOException {
 		String sourcePath = sourceDirectory.getAbsolutePath();
 
-		TarArchiveOutputStream archiveOutputStream = new TarArchiveOutputStream(
-				new GzipCompressorOutputStream(new BufferedOutputStream(bos)));
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(500000);
+		TarArchiveOutputStream archiveOutputStream = new TarArchiveOutputStream(new GzipCompressorOutputStream(new BufferedOutputStream(bos)));
 		archiveOutputStream.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
 
 		try {
 			Collection<File> childrenFiles = org.apache.commons.io.FileUtils.listFiles(sourceDirectory, null, true);
-
-			ArchiveEntry archiveEntry;
-			FileInputStream fileInputStream;
 			for (File childFile : childrenFiles) {
 				String childPath = childFile.getAbsolutePath();
+				
 				String relativePath = childPath.substring((sourcePath.length() + 1), childPath.length());
-
 				if (pathPrefix != null) {
-					relativePath = Utils.combinePaths(pathPrefix, relativePath);
+					relativePath = org.hyperledger.fabric.sdk.helper.Utils.combinePaths(pathPrefix, relativePath);
 				}
-
 				relativePath = FilenameUtils.separatorsToUnix(relativePath);
 
-				archiveEntry = new TarArchiveEntry(childFile, relativePath);
-				fileInputStream = new FileInputStream(childFile);
+				ArchiveEntry archiveEntry = new TarArchiveEntry(childFile, relativePath);
+				FileInputStream fileInputStream = new FileInputStream(childFile);
 				archiveOutputStream.putArchiveEntry(archiveEntry);
 
 				try {
@@ -98,7 +89,6 @@ public class Util {
 	}
 
 	public static File findFileSk(File directory) {
-
 		File[] matches = directory.listFiles((dir, name) -> name.endsWith("_sk"));
 
 		if (null == matches) {

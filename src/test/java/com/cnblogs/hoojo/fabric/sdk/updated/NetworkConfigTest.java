@@ -183,7 +183,7 @@ public class NetworkConfigTest {
 	
 	private static void setTLSProps() throws Exception {
 		// Use the appropriate TLS/non-TLS network config file
-		networkConfig = NetworkConfig.fromYamlFile(CONFIG.getNetworkConfigFileYAML());
+		networkConfig = NetworkConfig.fromYamlFile(CONFIG.getNetworkConfigFile());
 
 		out("设置Orderer证书配置");
 		networkConfig.getOrdererNames().forEach(ordererName -> {

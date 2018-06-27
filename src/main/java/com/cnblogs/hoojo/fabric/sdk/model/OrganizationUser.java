@@ -114,6 +114,8 @@ public class OrganizationUser extends AbstractFabricObject implements User, Seri
 	 * 将此用户的状态保存到键值存储区
 	 */
 	public void storeState() {
+		logger.debug("向  store 缓存存储User：{}", this);
+		
 		ByteArrayOutputStream bos = null;
 		ObjectOutputStream oos = null;
 		
@@ -143,7 +145,6 @@ public class OrganizationUser extends AbstractFabricObject implements User, Seri
 	 * 从键值存储中恢复此用户的状态（如果找到）。 如果找不到，什么都不要做。
 	 */
 	public OrganizationUser restoreState() {
-		
 		String member = fileStore.get(storeKey);
 		if (null == member) {
 			return null;
@@ -170,6 +171,7 @@ public class OrganizationUser extends AbstractFabricObject implements User, Seri
 				this.enrollment = state.enrollment;
 				this.mspId = state.mspId;
 				
+				logger.debug("从 store 缓存恢复User：{}", this);
 				return this;
 			}
 		} catch (Exception e) {

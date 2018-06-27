@@ -28,7 +28,7 @@ import com.cnblogs.hoojo.fabric.sdk.log.ApplicationLogging;
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
 import com.cnblogs.hoojo.fabric.sdk.persistence.KeyValueFileStore;
-import com.cnblogs.hoojo.fabric.sdk.util.Util;
+import com.cnblogs.hoojo.fabric.sdk.util.GzipUtils;
 
 /**
  * User 管理服务
@@ -248,9 +248,9 @@ public class UserManager extends ApplicationLogging {
 		final String domain = org.getDomainName();
 
 		// src/test/fixture/sdkintegration/e2e-2Orgs/channel/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/
-		File keydir = Paths.get(config.getChannelPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/keystore", domain)).toFile();
-		File privateKeyFile = Util.findFileSk(keydir);
-		File certificateFile = Paths.get(config.getChannelPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/signcerts/Admin@%s-cert.pem", domain, domain)).toFile();
+		File keydir = Paths.get(config.getCryptoTxConfigRootPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/keystore", domain)).toFile();
+		File privateKeyFile = GzipUtils.findFileSk(keydir);
+		File certificateFile = Paths.get(config.getCryptoTxConfigRootPath(), "crypto-config/peerOrganizations/", domain, format("/users/Admin@%s/msp/signcerts/Admin@%s-cert.pem", domain, domain)).toFile();
 
 		logger.trace("privateKeyDir: {}", keydir.getAbsolutePath());
 		logger.trace("privateKeyFile: {}", privateKeyFile.getAbsolutePath());

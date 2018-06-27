@@ -41,13 +41,13 @@ public class DefaultConfiguration {
 	private final static Logger logger = LoggerFactory.getLogger(DefaultConfiguration.class);
 
 	/** 配置Key前缀 */
-	private static final String PREFIX = "org.hyperledger.fabric.sdktest.";
+	protected static final String PREFIX = "org.hyperledger.fabric.sdk.integration.";
 	/** 默认SDK配置 */
-	private static final String DEFAULT_SDK_CONFIG = "src/test/java/org/hyperledger/fabric/sdk/testutils.properties";
+	private static final String DEFAULT_SDK_CONFIG = "default-config.properties";
 	/** 系统变量 SDK配置 */
-	private static final String FABRIC_SDK_CONFIG = "org.hyperledger.fabric.sdktest.configuration";
+	private static final String FABRIC_SDK_CONFIG = "org.hyperledger.fabric.sdk.integration.configuration";
 	
-	private static final String FABRIC_NETWORK_HOST_KEY = "ORG_HYPERLEDGER_FABRIC_SDK_TEST_FABRIC_HOST";
+	private static final String FABRIC_NETWORK_HOST_KEY = "ORG_HYPERLEDGER_FABRIC_SDK_NETWORK_HOST";
 	/** fabric network host 区块链网络的主机IP地址 */
 	private static final String FABRIC_NETWORK_HOST = StringUtils.defaultString(System.getenv(FABRIC_NETWORK_HOST_KEY), "192.168.8.8");
 
@@ -59,15 +59,28 @@ public class DefaultConfiguration {
 	private static final String PROPOSAL_WAIT_TIME = PREFIX + "ProposalWaitTime";
 
 	/** 区块链网络配置key的前缀 */
-	private static final String FABRIC_NETWORK_KEY_PREFIX = PREFIX + "integrationTests.org.";
+	private static final String FABRIC_NETWORK_KEY_PREFIX = PREFIX + "sample.org.";
 	/** 匹配到 mspid 值*/
 	private static final Pattern ORG_MSPID_PATTERN = Pattern.compile("^" + Pattern.quote(FABRIC_NETWORK_KEY_PREFIX) + "([^\\.]+)\\.mspid$");
 
 	/** tls */
-	private static final String TLS_PATH = PREFIX + "integrationtests.tls";
+	protected static final String TLS_PATH = PREFIX + "app.tls";
+	
 	/** 不同版本通道、证书、交易配置 v1.0 and v1.1 src/test/fixture/sdkintegration/e2e-2Orgs */
-	private static final String FABRIC_SDK_VERSION = "ORG_HYPERLEDGER_FABRIC_SDKTEST_VERSION";
-	public static final String FABRIC_CONFIG_GEN_VERSION = Objects.equals(System.getenv(FABRIC_SDK_VERSION), "1.0.0") ? "v1.0" : "v1.1";
+	private static final String FABRIC_CONFIG_GENERATOR_VERSION = "FABRIC_CONFIG_GENERATOR_VERSION"; //"v1.0" : "v1.1";
+	
+	/** chaincode 和 组织 、通道、区块配置的根目录 */
+	private static final String COMMON_CONFIG_ROOT_PATH = "COMMON_CONFIG_ROOT_PATH_LOCATION";
+	/** crypto-config & channel-artifacts 根目录 */
+	private static final String CRYPTO_TX_CONFIG_ROOT_PATH = "CRYPTO_TX_CONFIG_ROOT_PATH_LOCATION";
+	/** chaincode 源码文件路径 */
+	private static final String CHAINCODE_SOURCE_CODE_FILE_PATH = "CHAINCODE_SOURCE_CODE_FILE_PATH_LOCATION";
+	/** 通道配置 路径*/
+	private static final String CHANNEL_TRANSACTION_FILE_PATH = "CHANNEL_TRANSACTION_FILE_PATH_LOCATION";
+	/** chaincode背书策略文件路径 */
+	private static final String ENDORSEMENT_POLICY_FILE_PATH = "ENDORSEMENT_POLICY_FILE_PATH_LOCATION";
+	/** fabric network  config 配置文件路径 */
+	private static final String NETWORK_CONFIG_DIR_FILE_PATH = "NETWORK_CONFIG_DIR_FILE_PATH_LOCATION";
 	
 	/** SDK 配置 */
 	private static final Properties sdkProperties = new Properties();
@@ -82,7 +95,7 @@ public class DefaultConfiguration {
 	private final boolean runningFabricTLS;
 
 
-	private DefaultConfiguration() {
+	protected DefaultConfiguration() {
 		File configFile;
 		InputStream stream;
 
@@ -107,7 +120,9 @@ public class DefaultConfiguration {
 			configurationDefaultValues();
 			
 			// TLS 
-			runningTLS = null != getSDKProperty(TLS_PATH, null);
+			String tls = getSDKProperty(TLS_PATH, System.getenv("ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_TLS"));
+			logger.debug("tls: {}", tls);
+			runningTLS = StringUtils.equals(tls, "true");
 			runningFabricCATLS = runningTLS;
 			runningFabricTLS = runningTLS;
 			
@@ -177,12 +192,12 @@ public class DefaultConfiguration {
 		organization.setCAName(getSDKProperty((FABRIC_NETWORK_KEY_PREFIX + orgName + ".caName")));
 		
 		if (runningFabricCATLS) {
-			String cert = "src/test/fixture/sdkintegration/e2e-2Orgs/FAB_CONFIG_GEN_VERS/crypto-config/peerOrganizations/DNAME/ca/ca.DNAME-cert.pem";
+			String cert = getCryptoTxConfigRootPath() + "/crypto-config/peerOrganizations/DNAME/ca/ca.DNAME-cert.pem";
 			cert = cert.replaceAll("DNAME", organization.getDomainName());
-			cert = cert.replaceAll("FAB_CONFIG_GEN_VERS", FABRIC_CONFIG_GEN_VERSION);
 			
 			File certFile = new File(cert);
 			if (!certFile.exists() || !certFile.isFile()) {
+				logger.debug("certFile path: {}", certFile.getAbsolutePath());
 				throw new RuntimeException("证书文件不存在： " + certFile.getAbsolutePath());
 			}
 			
@@ -216,7 +231,7 @@ public class DefaultConfiguration {
 		}
 	}
 	
-	private void configurationDefaultValues() {
+	protected void configurationDefaultValues() {
 		// Default values
 		defaultProperty(INVOKE_WAIT_TIME, "120");
 		defaultProperty(DEPLOY_WAIT_TIME, "120000");
@@ -296,7 +311,7 @@ public class DefaultConfiguration {
 		return ret;
 	}
 	
-	private String getSDKProperty(String property, String defaultValue) {
+	private static String getSDKProperty(String property, String defaultValue) {
 		return sdkProperties.getProperty(property, defaultValue);
 	}
 	
@@ -348,17 +363,26 @@ public class DefaultConfiguration {
 
 	/** 节点配置 */
 	public Properties getPeerProperties(String name) {
-		return getTLSCertProperties("peer", name);
+		Properties props = getTLSCertProperties("peer", name);
+		
+		logger.debug("{} properties: {}", name, props);
+		return props;
 	}
 
 	/** orderer 服务配置 */
 	public Properties getOrdererProperties(String name) {
-		return getTLSCertProperties("orderer", name);
+		Properties props = getTLSCertProperties("orderer", name);
+		
+		logger.debug("{} properties: {}", name, props);
+		return props;
 	}
 	
 	/** 事件机制配置 */
 	public Properties getEventHubProperties(String name) {
-		return getTLSCertProperties("peer", name); // uses same as named peer
+		Properties props = getTLSCertProperties("peer", name); // uses same as named peer
+		
+		logger.debug("{} properties: {}", name, props);
+		return props;
 	}
 	
 	private String getDomainName(final String name) {
@@ -375,7 +399,7 @@ public class DefaultConfiguration {
 
 		final String domainName = getDomainName(name);
 
-		File cert = Paths.get(getChannelPath(), "crypto-config/ordererOrganizations".replace("orderer", type), domainName, type + "s", name, "tls/server.crt").toFile();
+		File cert = Paths.get(getCryptoTxConfigRootPath(), "crypto-config/ordererOrganizations".replace("orderer", type), domainName, type + "s", name, "tls/server.crt").toFile();
 		if (!cert.exists()) {
 			throw new RuntimeException(String.format("Missing cert file for: %s. Could not find at location: %s", name, cert.getAbsolutePath()));
 		}
@@ -384,11 +408,11 @@ public class DefaultConfiguration {
 			File clientCert;
 			File clientKey;
 			if ("orderer".equals(type)) {
-				clientCert = Paths.get(getChannelPath(), "crypto-config/ordererOrganizations/example.com/users/Admin@example.com/tls/client.crt").toFile();
-				clientKey = Paths.get(getChannelPath(), "crypto-config/ordererOrganizations/example.com/users/Admin@example.com/tls/client.key").toFile();
+				clientCert = Paths.get(getCryptoTxConfigRootPath(), "crypto-config/ordererOrganizations/example.com/users/Admin@example.com/tls/client.crt").toFile();
+				clientKey = Paths.get(getCryptoTxConfigRootPath(), "crypto-config/ordererOrganizations/example.com/users/Admin@example.com/tls/client.key").toFile();
 			} else {
-				clientCert = Paths.get(getChannelPath(), "crypto-config/peerOrganizations/", domainName, "users/User1@" + domainName, "tls/client.crt").toFile();
-				clientKey = Paths.get(getChannelPath(), "crypto-config/peerOrganizations/", domainName, "users/User1@" + domainName, "tls/client.key").toFile();
+				clientCert = Paths.get(getCryptoTxConfigRootPath(), "crypto-config/peerOrganizations/", domainName, "users/User1@" + domainName, "tls/client.crt").toFile();
+				clientKey = Paths.get(getCryptoTxConfigRootPath(), "crypto-config/peerOrganizations/", domainName, "users/User1@" + domainName, "tls/client.key").toFile();
 			}
 
 			if (!clientCert.exists()) {
@@ -408,8 +432,6 @@ public class DefaultConfiguration {
 		props.setProperty("sslProvider", "openSSL");
 		props.setProperty("negotiationType", "TLS");
 		
-		logger.debug("getTLSCertProperties: {}", props);
-
 		return props;
 	}
 
@@ -419,7 +441,7 @@ public class DefaultConfiguration {
 	}
 
 	public boolean isRunningAgainstFabric10() {
-		return "IntegrationSuiteV1.java".equals(System.getProperty("org.hyperledger.fabric.sdktest.ITSuite"));
+		return getFabricConfigGeneratorVersion().contains("1.0");
 	}
 
 	/** 获取全部组织 */
@@ -432,25 +454,46 @@ public class DefaultConfiguration {
 		return ORGANIZATION_RESOURCES.get(name);
 	}
 	
-	/** 通道配置 */
+	public String getFabricConfigGeneratorVersion() {
+		return getSDKProperty(FABRIC_CONFIG_GENERATOR_VERSION, System.getenv("FAB_CONFIG_GEN_VERS"));
+	}
+	
+	/** crypto-config & channel-artifacts 根目录 */
+	public String getCryptoTxConfigRootPath() {
+		return Paths.get(getCommonConfigRootPath(), getSDKProperty(CRYPTO_TX_CONFIG_ROOT_PATH, "/e2e-2Orgs/"), getFabricConfigGeneratorVersion()).toString();
+	}
+	
+	/** 通道配置路径 */
 	public String getChannelPath() {
-		return "src/test/fixture/sdkintegration/e2e-2Orgs/" + FABRIC_CONFIG_GEN_VERSION;
+		return Paths.get(getCryptoTxConfigRootPath(), getSDKProperty(CHANNEL_TRANSACTION_FILE_PATH, "/channel-artifacts")).toString();
 	}
 	
-	public String getRootPath() {
-		return "src/test/fixture/";
+	/** 通道、区块、组织等配置根目录 */
+	public String getCommonConfigRootPath() {
+		return getSDKProperty(COMMON_CONFIG_ROOT_PATH); // src/test/fixture/sdkintegration
 	}
 	
+	/** 通道tx配置目录 */
 	public String getChaincodePath() {
-		return "";
+		return Paths.get(getCommonConfigRootPath(), getSDKProperty(CHAINCODE_SOURCE_CODE_FILE_PATH)).toString();
+	}
+	
+	/** 背书文件配置路径 */
+	public String getEndorsementPolicyFilePath() {
+		return Paths.get(getCommonConfigRootPath(), getSDKProperty(ENDORSEMENT_POLICY_FILE_PATH)).toString();
+	}
+
+	/** network config 父目录配置路径 */
+	public String getNetworkConfigDirFilePath() {
+		return Paths.get(getCommonConfigRootPath(), getSDKProperty(NETWORK_CONFIG_DIR_FILE_PATH)).toString();
 	}
 
 	/** 
 	 * 如果host不是localhost，将替换 network-config.yaml 中的host地址
 	 */
-	public File getNetworkConfigFileYAML() {
+	public File getNetworkConfigFile() {
 		String fileName = runningTLS ? "network-config-tls.yaml" : "network-config.yaml";
-		String filePath = "src/test/fixture/sdkintegration/network_configs/";
+		String filePath = getNetworkConfigDirFilePath(); //"src/test/fixture/sdkintegration/network_configs/";
 		
 		File networkConfig = new File(filePath, fileName);
 		logger.trace("network yaml 文件最终位置：{}", networkConfig);

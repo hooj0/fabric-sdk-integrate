@@ -9,12 +9,10 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import org.hyperledger.fabric.protos.peer.Query.ChaincodeInfo;
+import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.sdk.ChaincodeEndorsementPolicy;
-import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.ChaincodeResponse.Status;
 import org.hyperledger.fabric.sdk.Channel;
 import org.hyperledger.fabric.sdk.HFClient;
@@ -27,11 +25,9 @@ import org.hyperledger.fabric.sdk.UpgradeProposalRequest;
 import org.hyperledger.fabric.sdk.User;
 
 import com.cnblogs.hoojo.fabric.sdk.config.DefaultConfiguration;
-import com.cnblogs.hoojo.fabric.sdk.entity.InstallChaincode;
-import com.cnblogs.hoojo.fabric.sdk.entity.InstantiateChaincode;
-import com.cnblogs.hoojo.fabric.sdk.entity.UpgradeChaincode;
-import com.cnblogs.hoojo.fabric.sdk.model.Organization;
-import com.cnblogs.hoojo.fabric.sdk.util.Util;
+import com.cnblogs.hoojo.fabric.sdk.entity.InstallEntity;
+import com.cnblogs.hoojo.fabric.sdk.entity.InstantiateUpgradeEntity;
+import com.cnblogs.hoojo.fabric.sdk.util.GzipUtils;
 import com.google.common.base.Optional;
 
 /**
@@ -47,14 +43,8 @@ import com.google.common.base.Optional;
  */
 public class ChaincodeManager extends AbstractTransactionManager {
 
-	private HFClient client;
-	private Channel channel;
-
-	public ChaincodeManager(HFClient client, Channel channel, DefaultConfiguration config) {
-		super(config);
-		
-		this.client = client;
-		this.channel = channel;
+	public ChaincodeManager(DefaultConfiguration config, HFClient client) {
+		super(config, client);
 	}
 
 	/**
@@ -62,23 +52,23 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
-	public void installChaincode(InstallChaincode chaincode, boolean streamed) throws Exception {
+	public void installChaincode(Channel channel, InstallEntity chaincode, boolean streamed) throws Exception {
 
-		if (!streamed) { // foo cc 直接从gopath目录下安装
-			installChaincode(chaincode, Paths.get(config.getRootPath(), config.getChaincodePath()).toFile());
+		if (!streamed) { 
+			installChaincode(channel, chaincode, Paths.get(config.getChaincodePath()).toFile());
 			
 			logger.debug("Chaincode path: {}", chaincode.getChaincodeSourceFile().getAbsolutePath());
 		} else {
 			if (chaincode.getLanguage() == Type.GO_LANG) {
-				File chaincodeFile = Paths.get(config.getRootPath(), config.getChaincodePath(), "src", chaincode.getChaincodeId().getPath()).toFile();
+				File chaincodeFile = Paths.get(config.getChaincodePath(), "src", chaincode.getChaincodeId().getPath()).toFile();
 				logger.debug("Chaincode path: {}", chaincodeFile.getAbsolutePath());
 				
-				installChaincode(chaincode, Util.generateTarGzInputStream(chaincodeFile, Paths.get("src", chaincode.getChaincodeId().getPath()).toString()));
+				installChaincode(channel, chaincode, GzipUtils.generateTarGzInputStream(chaincodeFile, Paths.get("src", chaincode.getChaincodeId().getPath()).toString()));
 			} else {
-				File chaincodeFile = Paths.get(config.getRootPath(), config.getChaincodePath()).toFile();
+				File chaincodeFile = Paths.get(config.getChaincodePath()).toFile();
 				logger.debug("Chaincode path: {}", chaincodeFile.getAbsolutePath());
 				
-				installChaincode(chaincode, Util.generateTarGzInputStream(chaincodeFile, "src"));
+				installChaincode(channel, chaincode, GzipUtils.generateTarGzInputStream(chaincodeFile, "src"));
 			}
 		}
 	}
@@ -88,11 +78,11 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
-	public void installChaincode(InstallChaincode chaincode, File chaincodeSourceFile) throws Exception {
+	public void installChaincode(Channel channel, InstallEntity chaincode, File chaincodeSourceFile) throws Exception {
 		chaincode.setChaincodeSourceFile(checkNotNull(chaincodeSourceFile, "chaincodeSourceFile 是必填参数"));
 		chaincode.setChaincodeSourceStream(null);
 		
-		installChaincode(chaincode);
+		installChaincode(channel, chaincode);
 	}
 
 	/**
@@ -100,11 +90,11 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
-	public void installChaincode(InstallChaincode chaincode, InputStream chaincodeStream) throws Exception {
+	public void installChaincode(Channel channel, InstallEntity chaincode, InputStream chaincodeStream) throws Exception {
 		chaincode.setChaincodeSourceStream(checkNotNull(chaincodeStream, "chaincodeStream 是必填参数"));
 		chaincode.setChaincodeSourceFile(null);
 
-		installChaincode(chaincode);
+		installChaincode(channel, chaincode);
 	}
 
 	/**
@@ -112,7 +102,7 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:52:27
 	 */
-	public void installChaincode(InstallChaincode chaincode) throws Exception {
+	public void installChaincode(Channel channel, InstallEntity chaincode) throws Exception {
 		logger.info("通道：{} 安装chaincode: {}", channel.getName(), chaincode.getChaincodeId());
 
 		checkNotNull(chaincode.getChaincodeId(), "chaincodeId 是必填参数");
@@ -121,20 +111,23 @@ public class ChaincodeManager extends AbstractTransactionManager {
 		Collection<ProposalResponse> successful = new LinkedList<>();
 		Collection<ProposalResponse> failed = new LinkedList<>();
 
-		/***************** 构建安装chaincode请求 *******************/
+		// 构建安装chaincode请求
 		InstallProposalRequest installRequest = client.newInstallProposalRequest();
-		installRequest.setChaincodeID(chaincode.getChaincodeId());
-		installRequest.setChaincodeVersion(chaincode.getChaincodeId().getVersion());
+		installRequest.setProposalWaitTime(config.getProposalWaitTime());
 		installRequest.setChaincodeLanguage(chaincode.getLanguage());
-
-		if (chaincode.getChaincodeSourceFile() != null) { // foo cc 直接从gopath目录下安装
+		installRequest.setChaincodeID(chaincode.getChaincodeId());
+		
+		if (!StringUtils.isBlank(chaincode.getChaincodeVersion())) {
+			installRequest.setChaincodeVersion(chaincode.getChaincodeVersion());
+		}
+		if (chaincode.getChaincodeSourceFile() != null) { 
 			logger.debug("ChaincodeSourceFile path: {}", chaincode.getChaincodeSourceFile().getAbsolutePath());
 			installRequest.setChaincodeSourceLocation(chaincode.getChaincodeSourceFile());
 		} else {
 			installRequest.setChaincodeInputStream(chaincode.getChaincodeSourceStream());
 		}
 
-		/************************ 发送安装请求 ***************************/
+		// 发送安装请求
 		// 只有来自同一组织的客户端才能发出安装请求
 		Collection<Peer> peers = channel.getPeers();
 		Collection<ProposalResponse> responses = client.sendInstallProposal(installRequest, peers);
@@ -162,8 +155,8 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:54:46
 	 */
-	public Collection<ProposalResponse> instantiateChaincode(InstantiateChaincode chaincode) throws Exception {
-		return instantiateChaincode(chaincode, null);
+	public Collection<ProposalResponse> instantiateChaincode(Channel channel, InstantiateUpgradeEntity chaincode) throws Exception {
+		return instantiateChaincode(channel, chaincode, null);
 	}
 	
 	/**
@@ -171,7 +164,7 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月15日 上午11:54:46
 	 */
-	public Collection<ProposalResponse> instantiateChaincode(InstantiateChaincode chaincode, User reqUserCtx) throws Exception {
+	public Collection<ProposalResponse> instantiateChaincode(Channel channel, InstantiateUpgradeEntity chaincode, User reqUserCtx) throws Exception {
 		logger.info("在通道：{} 实例化Chaincode：{}", channel.getName(), chaincode.getChaincodeId());
 
 		checkNotNull(chaincode.getEndorsementPolicy(), "endorsementPolicy 背书策略文件为必填项");
@@ -181,7 +174,6 @@ public class ChaincodeManager extends AbstractTransactionManager {
 
 		// 注意安装chaincode不需要事务不需要发送给 Orderers
 		InstantiateProposalRequest instantiateRequest = client.newInstantiationProposalRequest();
-		instantiateRequest.setChaincodeVersion(chaincode.getChaincodeId().getVersion());
 		instantiateRequest.setChaincodeLanguage(chaincode.getLanguage());
 		instantiateRequest.setChaincodeID(chaincode.getChaincodeId());
 		instantiateRequest.setFcn(chaincode.getFunc());
@@ -246,8 +238,8 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:50:11
 	 */
-	public Collection<ProposalResponse> upgradeChaincode(UpgradeChaincode chaincode) throws Exception {
-		return upgradeChaincode(chaincode, null);
+	public Collection<ProposalResponse> upgradeChaincode(Channel channel, InstantiateUpgradeEntity chaincode) throws Exception {
+		return upgradeChaincode(channel, chaincode, null);
 	}
 	
 	/**
@@ -255,7 +247,7 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @author hoojo
 	 * @createDate 2018年6月25日 上午10:50:11
 	 */
-	public Collection<ProposalResponse> upgradeChaincode(UpgradeChaincode chaincode, User reqUserCtx) throws Exception {
+	public Collection<ProposalResponse> upgradeChaincode(Channel channel, InstantiateUpgradeEntity chaincode, User reqUserCtx) throws Exception {
 		logger.info("通道：{} 升级安装 chaincode: {}", channel.getName(), chaincode.getChaincodeId());
 
 		checkNotNull(chaincode.getEndorsementPolicy(), "endorsementPolicy 背书策略文件为必填项");
@@ -264,8 +256,9 @@ public class ChaincodeManager extends AbstractTransactionManager {
 		chaincode.setArgs(Optional.fromNullable(chaincode.getArgs()).or(new String[] {}));
 
 		UpgradeProposalRequest upgradeProposalRequest = client.newUpgradeProposalRequest();
-		upgradeProposalRequest.setChaincodeID(chaincode.getChaincodeId());
 		upgradeProposalRequest.setProposalWaitTime(config.getProposalWaitTime());
+		upgradeProposalRequest.setChaincodeLanguage(chaincode.getLanguage());
+		upgradeProposalRequest.setChaincodeID(chaincode.getChaincodeId());
 		upgradeProposalRequest.setFcn(chaincode.getFunc());
 		upgradeProposalRequest.setArgs(chaincode.getArgs()); // no arguments don't change the ledger see chaincode.
 
@@ -276,7 +269,6 @@ public class ChaincodeManager extends AbstractTransactionManager {
 			upgradeProposalRequest.setTransientMap(chaincode.getTransientMap());
 		}
 		if (reqUserCtx != null) {
-			// org.getPeerAdmin()
 			upgradeProposalRequest.setUserContext(reqUserCtx);
 		}
 
@@ -310,6 +302,15 @@ public class ChaincodeManager extends AbstractTransactionManager {
 
 		return successResponses;
 	}
+
+	/**
+	 * 设置背书策略配置
+	 * @author hoojo
+	 * @createDate 2018年6月25日 下午1:02:33
+	 */
+	public ChaincodeEndorsementPolicy getChaincodeEndorsementPolicy() throws Exception {
+		return getChaincodeEndorsementPolicy(null);
+	}
 	
 	/**
 	 * 设置背书策略配置
@@ -317,92 +318,18 @@ public class ChaincodeManager extends AbstractTransactionManager {
 	 * @createDate 2018年6月25日 下午1:02:33
 	 */
 	public ChaincodeEndorsementPolicy getChaincodeEndorsementPolicy(String endorsementPolicyYamlFilePath) throws Exception {
-		File policyFile = Paths.get(config.getRootPath(), endorsementPolicyYamlFilePath).toFile();
+		
+		File policyFile = null;
+		if (StringUtils.isEmpty(endorsementPolicyYamlFilePath)) {
+			policyFile = new File(config.getEndorsementPolicyFilePath());
+		} else {
+			policyFile = Paths.get(config.getCommonConfigRootPath(), endorsementPolicyYamlFilePath).toFile();
+		}
 		logger.info("背书策略文件：{}", policyFile.getAbsolutePath());
 
 		ChaincodeEndorsementPolicy endorsementPolicy = new ChaincodeEndorsementPolicy();
 		endorsementPolicy.fromYamlFile(policyFile);
 
 		return endorsementPolicy;
-	}
-
-	/**
-	 * 检查Chaincode在peer上是否成功安装
-	 * @author hoojo
-	 * @createDate 2018年6月25日 上午10:49:01
-	 */
-	public boolean checkInstalledChaincode(Peer peer, ChaincodeID chaincodeId) throws Exception {
-		logger.info("检查是否存在chaincode: {}, version: {}, peer: {}", chaincodeId.getName(), chaincodeId.getVersion(), peer.getName());
-
-		List<ChaincodeInfo> list = client.queryInstalledChaincodes(peer);
-
-		boolean found = false;
-		for (ChaincodeInfo chaincodeInfo : list) {
-			logger.debug("Peer: {} 已安装chaincode：{}", peer.getName(), chaincodeInfo);
-
-			if (chaincodeId.getPath() != null) {
-				found = chaincodeId.getName().equals(chaincodeInfo.getName()) && chaincodeId.getPath().equals(chaincodeInfo.getPath()) && chaincodeId.getVersion().equals(chaincodeInfo.getVersion());
-				if (found) {
-					break;
-				}
-			}
-
-			found = chaincodeId.getName().equals(chaincodeInfo.getName()) && chaincodeId.getVersion().equals(chaincodeInfo.getVersion());
-			if (found) {
-				break;
-			}
-		}
-
-		return found;
-	}
-
-	/**
-	 * 检查Chaincode在channel上是否实例化
-	 * @author hoojo
-	 * @createDate 2018年6月25日 上午10:48:29
-	 */
-	public boolean checkInstantiatedChaincode(Channel channel, Peer peer, ChaincodeID chaincodeId) throws Exception {
-		logger.info("在通道：{} 检查是否实例化 chaincode: {}, version: {}, peer: {}", channel.getName(), chaincodeId.getName(), chaincodeId.getVersion(), peer.getName());
-
-		List<ChaincodeInfo> chaincodeList = channel.queryInstantiatedChaincodes(peer);
-
-		boolean found = false;
-		for (ChaincodeInfo chaincodeInfo : chaincodeList) {
-			logger.debug("已实例化 chaincode：{}", chaincodeInfo);
-
-			if (chaincodeId.getPath() != null) {
-				found = chaincodeId.getName().equals(chaincodeInfo.getName()) && chaincodeId.getPath().equals(chaincodeInfo.getPath()) && chaincodeId.getVersion().equals(chaincodeInfo.getVersion());
-				if (found) {
-					break;
-				}
-			}
-
-			found = chaincodeId.getName().equals(chaincodeInfo.getName()) && chaincodeId.getVersion().equals(chaincodeInfo.getVersion());
-			if (found) {
-				break;
-			}
-		}
-
-		return found;
-	}
-
-	/**
-	 * 检查Chaincode是否在通道上成功安装和实例化
-	 * @author hoojo
-	 * @createDate 2018年6月25日 上午10:47:40
-	 */
-	public boolean checkChaincode(Channel channel, Organization org, ChaincodeID chaincodeId) throws Exception {
-		logger.info("检查通道 {} 是否安装且实例化Chaincode： {}", channel.getName(), chaincodeId.toString());
-
-		// 设置对等节点用户上下文
-		client.setUserContext(org.getPeerAdmin());
-
-		for (Peer peer : channel.getPeers()) {
-			if (checkInstalledChaincode(peer, chaincodeId) && checkInstantiatedChaincode(channel, peer, chaincodeId)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

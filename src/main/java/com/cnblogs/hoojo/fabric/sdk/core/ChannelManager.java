@@ -59,45 +59,41 @@ public class ChannelManager extends ApplicationLogging {
 
 		/** 设置 peer 管理员User上下文 */
 		client.setUserContext(org.getPeerAdmin());
-		// client.setUserContext(org.getUser(USER_NAME));
+		//client.setUserContext(org.getUser("user1"));
 
 		/** 恢复或创建通道 */
 		Channel channel = store.getChannel(client, channelName);
 		if (channel == null) {
-			/** 创建通道 */
-			channel = createChannel(channelName);
+			try {
+				/** 创建 Orderer 共识服务 */
+				logger.info("create orderer service");
+				List<Orderer> orderers = createOrderer(org);
 
-			createOrderer(channel, org);
+				/** 选择第一个 Orderer 创建通道 */
+				Orderer anOrderer = orderers.iterator().next();
 
-			/** 创建Orderer */
-			createPeer(channel, false, org);
+				/** 剔除已选择 Orderer */
+				logger.info("remove choose orderer service");
+				orderers.remove(anOrderer);
 
-		} else {
+				/** 创建通道 */
+				logger.info("Created channel: {}", channelName);
+				channel = createChannel(channelName, anOrderer, org);
 
-			/** 创建 Orderer 共识服务 */
-			logger.info("create orderer service");
-			List<Orderer> orderers = createOrderer(org);
+				/** 创建 peer，channel加入Peer */
+				logger.info("Created Peer Join Channel: {}", channelName);
+				createPeer(channel, true, org);
 
-			/** 选择第一个 Orderer 创建通道 */
-			Orderer anOrderer = orderers.iterator().next();
-
-			/** 剔除已选择 Orderer */
-			logger.info("remove choose orderer service");
-			orderers.remove(anOrderer);
-
-			/** 创建通道 */
-			logger.info("Created channel: {}", channelName);
-			channel = createChannel(channelName, anOrderer, org);
-
-			/** 创建 peer，channel加入Peer */
-			logger.info("Created Peer Join Channel: {}", channelName);
-			createPeer(channel, true, org);
-
-			/** 为通道添加其他 Orderer服务 */
-			logger.info("Add Orderer to Channel: {}", channelName);
-			for (Orderer orderer : orderers) {
-				channel.addOrderer(orderer);
-				logger.trace("Add Channel Orderer: {}->{}", orderer.getName(), orderer.getUrl());
+				/** 为通道添加其他 Orderer服务 */
+				logger.info("Add Orderer to Channel: {}", channelName);
+				for (Orderer orderer : orderers) {
+					channel.addOrderer(orderer);
+					logger.trace("Add Channel Orderer: {}->{}", orderer.getName(), orderer.getUrl());
+				}
+			} catch (Exception e) {
+				logger.warn("准备通道发生异常：{}", e);
+				/** 重建通道 */
+				channel = recreateChannel(channelName, org);
 			}
 		}
 
@@ -112,11 +108,30 @@ public class ChannelManager extends ApplicationLogging {
 		channel = checkChannelSerialize(channel);
 
 		checkChannel(channelName, channel);
-
+		
 		logger.info("Organization: {} , Finished initialization channel： {}", org.getName(), channelName);
+
+		store.saveChannel(channel);
 		return channel;
 	}
 
+	/**
+	 * 在store恢复失败的情况下，重新创建通道
+	 * @author hoojo
+	 * @createDate 2018年6月26日 下午4:50:46
+	 */
+	private Channel recreateChannel(String channelName, Organization org) throws Exception {
+		/** 创建通道 */
+		Channel channel = createChannel(channelName);
+
+		createOrderer(channel, org);
+
+		/** 创建Orderer */
+		createPeer(channel, false, org);
+		
+		return channel;
+	}
+	
 	/**
 	 * 恢复通道，在之前已有通道情况下，进行恢复通道操作
 	 * @author hoojo
@@ -266,7 +281,7 @@ public class ChannelManager extends ApplicationLogging {
 		logger.info("开始创建通道：{}", channelName);
 
 		// 通道配置文件
-		File channelFile = new File(config.getRootPath() + "/sdkintegration/e2e-2Orgs/" + DefaultConfiguration.FABRIC_CONFIG_GEN_VERSION + "/" + channelName + ".tx");
+		File channelFile = new File(config.getChannelPath(), channelName + ".tx");
 		logger.debug("通道配置文件：{}", channelFile.getAbsolutePath());
 		ChannelConfiguration channelConfiguration = new ChannelConfiguration(channelFile);
 
@@ -341,7 +356,7 @@ public class ChannelManager extends ApplicationLogging {
 			eventHubProps.put("grpc.NettyChannelBuilderOption.keepAliveTimeout", new Object[] { 8L, TimeUnit.SECONDS });
 
 			EventHub eventHub = client.newEventHub(eventHubName, grpcURL, eventHubProps);
-			logger.trace("Add EventHub name: {}, url: {}, conntime: {}", eventHub.getName(), eventHub.getUrl(), eventHub.getConnectedTime());
+			logger.trace("create EventHub name: {}, url: {}, conntime: {}", eventHub.getName(), eventHub.getUrl(), eventHub.getConnectedTime());
 
 			channel.addEventHub(eventHub);
 		}
@@ -393,7 +408,7 @@ public class ChannelManager extends ApplicationLogging {
 			logger.debug("通过对等节点：{} 找到通道：{}", peer.getName(), channels);
 
 			if (!channels.contains(channelName)) {
-				throw new AssertionError(format("对等节点  {} 中没有通道 {} ", peer.getName(), channelName));
+				throw new AssertionError(format("对等节点  %s 中没有通道 %s ", peer.getName(), channelName));
 			}
 		}
 	}

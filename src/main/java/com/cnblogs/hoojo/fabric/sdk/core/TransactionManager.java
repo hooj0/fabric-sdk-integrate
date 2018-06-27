@@ -43,12 +43,8 @@ import com.google.common.base.Strings;
  */
 public class TransactionManager extends AbstractTransactionManager {
 
-	private HFClient client;
-	
-	public TransactionManager(HFClient client, DefaultConfiguration config) {
-		super(config);
-		
-		this.client = client;
+	public TransactionManager(DefaultConfiguration config, HFClient client) {
+		super(config, client);
 	}
 	
 	/**
@@ -85,7 +81,6 @@ public class TransactionManager extends AbstractTransactionManager {
             transientMap.put("HyperLedgerFabric", "TransactionProposalRequest:JavaSDK".getBytes(UTF_8)); //Just some extra junk in transient map
             transientMap.put("method", "TransactionProposalRequest".getBytes(UTF_8)); // ditto
             transientMap.put("result", ":)".getBytes(UTF_8));  // This should be returned see chaincode why.
-            //transientMaps.put(EXPECTED_EVENT_NAME, EXPECTED_EVENT_DATA);  //This should trigger an event see chaincode why.
 
             if (transaction.getTransientMap() != null) {
             	transientMap.putAll(transaction.getTransientMap());
