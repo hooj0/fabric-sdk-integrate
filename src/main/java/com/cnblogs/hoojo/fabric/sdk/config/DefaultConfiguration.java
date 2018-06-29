@@ -59,12 +59,12 @@ public class DefaultConfiguration {
 	private static final String PROPOSAL_WAIT_TIME = PREFIX + "ProposalWaitTime";
 
 	/** 区块链网络配置key的前缀 */
-	private static final String FABRIC_NETWORK_KEY_PREFIX = PREFIX + "sample.org.";
+	private static final String FABRIC_NETWORK_KEY_PREFIX = PREFIX + "application.org.";
 	/** 匹配到 mspid 值*/
 	private static final Pattern ORG_MSPID_PATTERN = Pattern.compile("^" + Pattern.quote(FABRIC_NETWORK_KEY_PREFIX) + "([^\\.]+)\\.mspid$");
 
 	/** tls */
-	protected static final String TLS_PATH = PREFIX + "app.tls";
+	protected static final String TLS_PATH = PREFIX + "application.tls";
 	
 	/** 不同版本通道、证书、交易配置 v1.0 and v1.1 src/test/fixture/sdkintegration/e2e-2Orgs */
 	private static final String FABRIC_CONFIG_GENERATOR_VERSION = "FABRIC_CONFIG_GENERATOR_VERSION"; //"v1.0" : "v1.1";
@@ -94,8 +94,7 @@ public class DefaultConfiguration {
 	private final boolean runningFabricCATLS;
 	private final boolean runningFabricTLS;
 
-
-	protected DefaultConfiguration() {
+	private DefaultConfiguration() {
 		File configFile;
 		InputStream stream;
 
@@ -231,7 +230,7 @@ public class DefaultConfiguration {
 		}
 	}
 	
-	protected void configurationDefaultValues() {
+	private void configurationDefaultValues() {
 		// Default values
 		defaultProperty(INVOKE_WAIT_TIME, "120");
 		defaultProperty(DEPLOY_WAIT_TIME, "120000");
