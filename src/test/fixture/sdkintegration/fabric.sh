@@ -37,6 +37,11 @@ function clean(){
   	docker stop $(docker ps -aq)
     docker rm $(docker ps -aq)
   fi
+  
+  lines=`docker network ls -f 'name=sdkintegration_default' | wc -l`
+  if ((lines > 1)); then
+	  docker network rm sdkintegration_default
+  fi
 }
 
 function up(){

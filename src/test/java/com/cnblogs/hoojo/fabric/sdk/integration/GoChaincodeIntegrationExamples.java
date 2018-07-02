@@ -76,26 +76,26 @@ public class GoChaincodeIntegrationExamples {
 
 	private static final File storeFile = new File("HFCSampletest.properties");
 
-	private static final String channelName = "bar"; // foo bar
-	private static final String orgName = "peerOrg2";
+	private static final String channelName = "mychannel"; // foo bar
+	private static final String orgName = "peerOrg1";
 	
 	
 	private static final String ADMIN_NAME = "admin";
 	private static final String ADMIN_SECRET = "adminpw";
 	private static final String USER_NAME = "user1";
 	
-	private static final String CHAIN_CODE_NAME = "example_cc_go";
-	private static final String CHAIN_CODE_PATH = "github.com/example_cc";
-	private static final String CHAIN_CODE_VERSION = "1";
-	private static final String CHAIN_CODE_VERSION_11 = "11";
-	private static final Type CHAIN_CODE_LANG = Type.GO_LANG;
+	protected static String CHAIN_CODE_NAME = "example_cc_go";
+	protected static String CHAIN_CODE_PATH = "github.com/example_cc";
+	protected static final String CHAIN_CODE_VERSION = "1";
+	protected static final String CHAIN_CODE_VERSION_11 = "11";
+	protected static Type CHAIN_CODE_LANG = Type.GO_LANG;
 	
 	private static final String EXPECTED_EVENT_NAME = "event";
 	private static final byte[] EXPECTED_EVENT_DATA = "!".getBytes(UTF_8);
 
 	private static final DefaultConfiguration config = DefaultConfiguration.getConfig();
-	private static final ChaincodeID id = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION).build();
-	private static final ChaincodeID id_11 = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION_11).build();
+	protected static ChaincodeID id = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION).build();
+	protected static ChaincodeID id_11 = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION_11).build();
 
 	private KeyValueFileStore store;
 	private HFClient client;
