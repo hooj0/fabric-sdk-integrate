@@ -1,13 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>hyperledger.fabric-sdk-integrate</groupId>
+	
+	<groupId>hyperledger.fabric.sdk.integrate</groupId>
 	<artifactId>fabric-sdk-integrate</artifactId>
 	<packaging>jar</packaging>
 	<version>1.1.0-alpha</version>
+	
 	<name>fabric-java-integrate</name>
 	<description>Java SDK Integrate for Hyperledger fabric project</description>
 	<url>https://www.hyperledger.org/community/projects</url>
+	
 	<licenses>
 		<license>
 			<name>Apache License, Version 2.0</name>
@@ -15,6 +18,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+	
 	<developers>
 		<developer>
 			<name>Fabric JAVA SDK Integrate Developers</name>
