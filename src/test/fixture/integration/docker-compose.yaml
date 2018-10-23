@@ -5,6 +5,13 @@
 #
 version: '2'
 
+volumes:
+  orderer.example.com:
+  peer0.org1.example.com:
+  peer1.org1.example.com:
+  peer0.org2.example.com:
+  peer1.org2.example.com:
+  
 services:
   ca0:
     image: hyperledger/fabric-ca${IMAGE_TAG_FABRIC_CA}
@@ -58,7 +65,7 @@ services:
      - ./e2e-2Orgs/${FAB_CONFIG_GEN_VERS}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peerOrg1:ro
      - ./e2e-2Orgs/${FAB_CONFIG_GEN_VERS}/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/msp/peerOrg2:ro
      - ./e2e-2Orgs/script:/script
-
+     - orderer.example.com:/var/hyperledger/production/orderer
     ports:
       - 7050:7050
 
@@ -80,6 +87,7 @@ services:
       - /var/run/:/host/var/run/
       - ./e2e-2Orgs/${FAB_CONFIG_GEN_VERS}/crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/:/etc/hyperledger/msp/peer:ro
       - ./e2e-2Orgs/script:/script
+      - peer0.org1.example.com:/var/hyperledger/production
     ports:
       - 7051:7051
       - 7053:7053
@@ -104,6 +112,7 @@ services:
          - /var/run/:/host/var/run/
          - ./e2e-2Orgs/${FAB_CONFIG_GEN_VERS}/crypto-config/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/:/etc/hyperledger/msp/peer:ro
          - ./e2e-2Orgs/script:/script
+         - peer1.org1.example.com:/var/hyperledger/production
     ports:
        - 7056:7051
        - 7058:7053
@@ -129,6 +138,7 @@ services:
       - /var/run/:/host/var/run/
       - ./e2e-2Orgs/${FAB_CONFIG_GEN_VERS}/crypto-config/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/:/etc/hyperledger/msp/peer:ro
       - ./e2e-2Orgs/script:/script
+      - peer0.org2.example.com:/var/hyperledger/production
     ports:
       - 8051:7051
       - 8053:7053
@@ -153,6 +163,7 @@ services:
          - /var/run/:/host/var/run/
          - ./e2e-2Orgs/${FAB_CONFIG_GEN_VERS}/crypto-config/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/:/etc/hyperledger/msp/peer:ro
          - ./e2e-2Orgs/script:/script
+         - peer1.org2.example.com:/var/hyperledger/production
     ports:
        - 8056:7051
        - 8058:7053
