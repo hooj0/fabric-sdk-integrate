@@ -27,15 +27,9 @@
 	</developers>
 
 	<properties>
-		<grpc.version>1.9.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
-		<bouncycastle.version>1.59</bouncycastle.version>
-		<httpclient.version>4.5.5</httpclient.version>
-		<skipITs>true</skipITs>
-		<alpn-boot-version>8.1.7.v20160121</alpn-boot-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jacoco.version>0.7.9</jacoco.version>
-		<org.hyperledger.fabric.sdktest.ITSuite>IntegrationSuite.java</org.hyperledger.fabric.sdktest.ITSuite>
-		<gpg.executable>gpg2</gpg.executable>
+
+		<httpclient.version>4.5.5</httpclient.version>
 	</properties>
 
 	<dependencies>
