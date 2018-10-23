@@ -16,6 +16,8 @@
 
 package com.cnblogs.hoojo.fabric.sdk.util;
 
+import static java.lang.String.format;
+
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -40,11 +42,10 @@ import org.hyperledger.fabric.sdk.User;
 import org.hyperledger.fabric.sdk.helper.Config;
 import org.junit.Assert;
 
-import static java.lang.String.format;
-
 //import org.hyperledger.fabric.sdk.MockUser;
 //import org.hyperledger.fabric.sdk.ClientTest.MockEnrollment;
 
+@SuppressWarnings("rawtypes")
 public class TestUtils {
 
     private TestUtils() {
@@ -136,7 +137,7 @@ public class TestUtils {
         }
     }
 
-    private static Field getFieldInt(Class o, String name) throws NoSuchFieldException {
+	private static Field getFieldInt(Class o, String name) throws NoSuchFieldException {
         Field ret;
         try {
             ret = o.getDeclaredField(name);
@@ -215,7 +216,8 @@ public class TestUtils {
         return new MockEnrollment(key, cert);
     }
 
-    public static ArrayList tarBytesToEntryArrayList(byte[] bytes) throws Exception {
+    @SuppressWarnings("resource")
+	public static ArrayList tarBytesToEntryArrayList(byte[] bytes) throws Exception {
 
         ArrayList<String> ret = new ArrayList<>();
 
@@ -232,7 +234,8 @@ public class TestUtils {
 
     }
 
-    public static void assertArrayListEquals(String failmsg, ArrayList expect, ArrayList actual) {
+    @SuppressWarnings("unchecked")
+	public static void assertArrayListEquals(String failmsg, ArrayList expect, ArrayList actual) {
         ArrayList expectSort = new ArrayList(expect);
         Collections.sort(expectSort);
         ArrayList actualSort = new ArrayList(actual);
