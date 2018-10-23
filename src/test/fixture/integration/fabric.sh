@@ -65,6 +65,52 @@ function start (){
   docker-compose start;
 }
 
+function upgradeNetwork() {
+  docker inspect -f '{{.Config.Volumes}}' orderer.simple.com | grep -q '/var/hyperledger/production/orderer'
+  if [ $? -ne 0 ]; then
+    echo "ERROR !!!! This network does not appear to be using volumes for its ledgers, did you start from fabric-samples >= v1.1.x?"
+    exit 1
+  fi
+
+  LEDGERS_BACKUP=./ledgers-backup
+
+  # create ledger-backup directory
+  mkdir -p $LEDGERS_BACKUP
+
+  . .env
+  echo "IMAGE_TAG_FABRIC: $IMAGE_TAG_FABRIC"	
+
+  # removing the cli container
+  # docker-compose stop cli
+  # docker-compose up -d --no-deps cli
+
+  echo "Upgrading orderer"
+  docker-compose stop orderer.example.com
+  docker cp -a orderer.example.com:/var/hyperledger/production/orderer $LEDGERS_BACKUP/orderer.example.com
+  docker-compose up -d --no-deps orderer.example.com
+
+  for PEER in peer0.org1.example.com peer1.org1.example.com peer0.org2.example.com peer1.org2.example.com; do
+    echo "Upgrading peer $PEER"
+
+    # Stop the peer and backup its ledger
+    docker-compose stop $PEER
+    docker cp -a $PEER:/var/hyperledger/production $LEDGERS_BACKUP/$PEER/
+
+    # Remove any old containers and images for this peer
+    CC_CONTAINERS=$(docker ps | grep dev-$PEER | awk '{print $1}')
+    if [ -n "$CC_CONTAINERS" ]; then
+      docker rm -f $CC_CONTAINERS
+    fi
+
+    CC_IMAGES=$(docker images | grep dev-$PEER | awk '{print $1}')
+    if [ -n "$CC_IMAGES" ]; then
+      docker rmi -f $CC_IMAGES
+    fi
+
+    # Start the peer again
+    docker-compose up -d --no-deps $PEER
+  done
+}
 
 for opt in "$@"
 do
