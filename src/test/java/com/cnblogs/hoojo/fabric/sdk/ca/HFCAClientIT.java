@@ -47,7 +47,6 @@ import org.hyperledger.fabric_ca.sdk.HFCAAffiliation.HFCAAffiliationResp;
 import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.hyperledger.fabric_ca.sdk.HFCAIdentity;
 import org.hyperledger.fabric_ca.sdk.HFCAInfo;
-import org.hyperledger.fabric_ca.sdk.MockHFCAClient;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
 import org.hyperledger.fabric_ca.sdk.exception.EnrollmentException;
 import org.hyperledger.fabric_ca.sdk.exception.IdentityException;
@@ -56,7 +55,6 @@ import org.hyperledger.fabric_ca.sdk.exception.RevocationException;
 import org.hyperledger.fabric_ca.sdk.helper.Config;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -123,7 +121,7 @@ public class HFCAClientIT {
 
         // OrganizationUser can be any implementation that implements org.hyperledger.fabric.sdk.User Interface
         admin = store.getMember(ADMIN_NAME, ADMIN_ORG);
-        if (!admin.isEnrolled()) { // Preregistered admin only needs to be enrolled with Fabric CA.
+        if (!admin.isEnrolled()) { // 预注册的管理员只需要使用Fabric CA注册。
         	Enrollment enrollment = client.enroll(admin.getName(), ADMIN_PW);
         	out("admin enroll: %s", json(enrollment));
         	
@@ -643,7 +641,7 @@ public class HFCAClientIT {
         assertEquals("Incorrect response for type", ident.getType(), identGet.getType());
         assertEquals("Incorrect response for affiliation", ident.getAffiliation(), identGet.getAffiliation());
         assertEquals("Incorrect response for max enrollments", ident.getMaxEnrollments(), identGet.getMaxEnrollments());
-
+        
         Collection<Attribute> attrs = identGet.getAttributes();
         Boolean found = false;
         for (Attribute attr : attrs) {
@@ -1246,6 +1244,7 @@ public class HFCAClientIT {
         client.revoke(admin, "unknownUser", "remove user2"); //Identity unknownUser was not found
     }
 
+    /*
     @Test
     public void testMockEnrollSuccessFalse() throws Exception {
 
@@ -1347,7 +1346,7 @@ public class HFCAClientIT {
         mockClient.setHttpPostResponse("{\"success\":true}");
         mockClient.reenroll(user);
     }
-
+    */
     // ==========================================================================================
     // Helper methods
     // ==========================================================================================
