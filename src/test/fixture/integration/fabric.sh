@@ -136,7 +136,9 @@ do
             clean
             up
             ;;
-
+		upgrade)
+			upgradeNetwork
+			;;
         *)
             echo $"Usage: $0 {up|down|start|stop|clean|restart}"
             exit 1
