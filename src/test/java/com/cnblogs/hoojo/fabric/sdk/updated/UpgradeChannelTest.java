@@ -103,7 +103,7 @@ public class UpgradeChannelTest {
                 OrganizationUser peerAdmin = wrapperPeerAdmin(store, org);
                 org.setPeerAdmin(peerAdmin);
             }
-
+            
             ////////////////////////////
             //Set up Channel
             out("Reconstruct and run the channels");
@@ -252,6 +252,16 @@ public class UpgradeChannelTest {
     int eventCountFilteredBlock = 0;
     int eventCountBlock = 0;
 
+    private Channel syschannel(HFClient client, Organization org) throws Exception {
+    	client.setUserContext(org.getPeerAdmin());
+    	
+    	Channel newChannel = client.newChannel("testchainid");
+    	
+    	newChannel.initialize();
+
+        return newChannel;
+    }
+    
     private Channel reconstructChannel(String name, HFClient client, Organization org) throws Exception {
 
         client.setUserContext(org.getPeerAdmin());
