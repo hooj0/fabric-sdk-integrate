@@ -49,7 +49,7 @@ public class DefaultConfiguration {
 	
 	private static final String FABRIC_NETWORK_HOST_KEY = "ORG_HYPERLEDGER_FABRIC_SDK_NETWORK_HOST";
 	/** fabric network host 区块链网络的主机IP地址 */
-	private static final String FABRIC_NETWORK_HOST = StringUtils.defaultString(System.getenv(FABRIC_NETWORK_HOST_KEY), "192.168.8.8");
+	private static final String FABRIC_NETWORK_HOST = StringUtils.defaultString(System.getenv(FABRIC_NETWORK_HOST_KEY), "192.168.99.100");
 
 	/** 调用合约等待时间 */
 	private static final String INVOKE_WAIT_TIME = PREFIX + "InvokeWaitTime";
