@@ -203,6 +203,10 @@ public class OrganizationUser extends AbstractFabricObject implements User, Seri
 		
 		storeState();
 	}
+	
+	public void setIdemixEnrollment(Enrollment enrollment) {
+        this.enrollment = enrollment;
+    }
 
 	@Override
 	public String getMspId() {
