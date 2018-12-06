@@ -93,6 +93,16 @@ import com.google.common.collect.Lists;
 /**
  * `end 2 end` JavaSDK use API Examples
  * 
+ * 每次运行需要重新启动end-2-end网络
+	   	使用Fabric证书颁发机构注册和注册用户。
+		第一次构建频道。
+		安装链码。
+		实例化链码。
+		执行链码。
+		查询通道的块信息。
+		Chaincode事件监听器
+		遍历块以获取信息。
+		所有其他测试用例的先决条件。
  * @author hoojo
  * @createDate 2018年6月12日 下午4:31:43
  * @file End2EndExamples.java
@@ -104,7 +114,7 @@ import com.google.common.collect.Lists;
  */
 public class End2EndExamples extends ApplicationLogging {
 
-	private static final DefaultConfiguration config = DefaultConfiguration.getConfig();
+	protected static final DefaultConfiguration config = DefaultConfiguration.getConfig();
 	private Map<String, Properties> clientTLSProperties = new HashMap<>();
 	
 	private Collection<Organization> organizations;
@@ -115,7 +125,7 @@ public class End2EndExamples extends ApplicationLogging {
 
 	private static final String ADMIN_NAME = "admin";
 	private static final String ADMIN_SECRET = "adminpw";
-	private static final String USER_NAME = "user1";
+	protected static String USER_NAME = "user1";
 	
 	private static final String CONFIG_ROOT_PATH = "src/test/fixture";
 
@@ -1387,7 +1397,7 @@ public class End2EndExamples extends ApplicationLogging {
 	 * @return
 	 * @throws Exception
 	 */
-	private OrganizationUser registerAndEnrollUser(KeyValueFileStore store, Organization org) throws Exception {
+	protected OrganizationUser registerAndEnrollUser(KeyValueFileStore store, Organization org) throws Exception {
 		logger.info("普通用户——注册和认证……");
 		
 		HFCAClient ca = org.getCAClient();
@@ -1544,7 +1554,7 @@ public class End2EndExamples extends ApplicationLogging {
 		return ret;
 	}
 	
-	private String json(Object o) {
+	protected String json(Object o) {
 		if (o != null)
 			return o.toString();
 			//return new Gson().toJson(o);
