@@ -99,6 +99,15 @@ public class DefaultConfiguration {
 		InputStream stream;
 
 		try {
+			final String version = getFabricConfigGeneratorVersion();
+			if (!StringUtils.startsWith(version, "v")) {
+				throw new IllegalArgumentException("Expected Config 'FABRIC_CONFIG_GENERATOR_VERSION' or Env 'FAB_CONFIG_GEN_VERS' Must start with 'v' (eg: v1.0)");
+			}
+			final String[] versions = version.substring(1).split("\\.");
+	        if (versions.length != 2) {
+	        	throw new IllegalArgumentException("Expected Config 'FABRIC_CONFIG_GENERATOR_VERSION' or Env 'FAB_CONFIG_GEN_VERS' to be three numbers sperated by dots (v1.0)");
+	        }
+	        
 			// 读取 sdk 配置文件，没有就读取默认配置 DEFAULT_CONFIG
 			String configPath = System.getProperty(FABRIC_SDK_CONFIG, DEFAULT_SDK_CONFIG);
 			configFile = new File(configPath).getAbsoluteFile();
@@ -442,6 +451,20 @@ public class DefaultConfiguration {
 	public boolean isRunningAgainstFabric10() {
 		return getFabricConfigGeneratorVersion().contains("1.0");
 	}
+	
+	public boolean isFabricVersionAtOrAfter(String version) {
+		double v = Double.parseDouble(this.getFabricConfigGeneratorVersion().substring(1));
+		if (Double.parseDouble(version) > v) {
+			return false;
+		}
+		
+		return true;
+    }
+
+    public boolean isFabricVersionBefore(String version) {
+
+        return !isFabricVersionAtOrAfter(version);
+    }
 
 	/** 获取全部组织 */
 	public Collection<Organization> getOrganizations() {
