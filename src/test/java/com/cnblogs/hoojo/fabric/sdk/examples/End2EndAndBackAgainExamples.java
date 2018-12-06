@@ -72,6 +72,12 @@ import com.google.gson.Gson;
 
 /**
  * `end 2 end` JavaSDK use API End2EndAndBackAgainExamples
+ * 在End2End示例运行完成后，不重新启动网络，会从前一个示例中恢复数据，运行示例。
+ * 
+ * 重新创建频道。
+ * 更新链码。
+ * 检查已安装和实例化的链代码。
+ * 
  * @author hoojo
  * @createDate 2018年6月19日 上午9:47:29
  * @file End2EndAndBackAgainExamples.java
@@ -92,8 +98,6 @@ public class End2EndAndBackAgainExamples {
 
     private static final String FOO_CHANNEL_NAME = "foo";
     private static final String BAR_CHANNEL_NAME = "bar";
-    
-    //private final TestConfigHelper configHelper = new TestConfigHelper();
     
     private KeyValueFileStore store;
     private Collection<Organization> organizations;
