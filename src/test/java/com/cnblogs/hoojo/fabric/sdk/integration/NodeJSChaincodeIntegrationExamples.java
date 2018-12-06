@@ -5,7 +5,7 @@ import org.hyperledger.fabric.sdk.TransactionRequest.Type;
 import org.junit.Test;
 
 /**
- * <b>function:</b>
+ * NodeJS Chaincode Integration Example
  * @author hoojo
  * @createDate 2018年6月29日 下午3:22:24
  * @file NodeJSChaincodeIntegrationExamples.java
