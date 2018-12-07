@@ -1210,14 +1210,19 @@ public class End2EndExamples extends ApplicationLogging {
 
 			// 创建节点
 			Peer peer = client.newPeer(peerName, grpcURL, peerProps);
-
 			PeerOptions options = PeerOptions.createPeerOptions();
-			if (doPeerEventing && everyother) {
-				// 默认 所有角色
-			} else {
-				// 除事件源外的所有角色
-				options.setPeerRoles(PeerRole.NO_EVENT_SOURCE);
-			}
+			
+			//XXX 1.3 changed
+			if (config.isFabricVersionAtOrAfter("1.3")) {
+				options.setPeerRoles(EnumSet.of(PeerRole.ENDORSING_PEER, PeerRole.LEDGER_QUERY, PeerRole.CHAINCODE_QUERY, PeerRole.EVENT_SOURCE)); //Default is all roles.
+            } else {
+                if (doPeerEventing && everyother) {
+                	options.setPeerRoles(EnumSet.of(PeerRole.ENDORSING_PEER, PeerRole.LEDGER_QUERY, PeerRole.CHAINCODE_QUERY, PeerRole.EVENT_SOURCE)); //Default is all roles.
+                } else {
+                    // Set peer to not be all roles but eventing.
+                	options.setPeerRoles(EnumSet.of(PeerRole.ENDORSING_PEER, PeerRole.LEDGER_QUERY, PeerRole.CHAINCODE_QUERY));
+                }
+            }
 			logger.info("对等节点:{}，角色：{}， 加入通道：{}", peerName, options.getPeerRoles(), channel.getName());
 			// 加入通道
 			channel.joinPeer(peer, options);
@@ -1228,7 +1233,7 @@ public class End2EndExamples extends ApplicationLogging {
         
 		//just for testing ...
 		// 测试事件模式下，确定至少有一种角色类型的对等节点
-        if (doPeerEventing) {
+        if (doPeerEventing || config.isFabricVersionAtOrAfter("1.3")) {
         	// foo -> 角色：[ENDORSING_PEER, CHAINCODE_QUERY, LEDGER_QUERY]
         	if (!channel.getPeers(EnumSet.of(PeerRole.EVENT_SOURCE)).isEmpty()) {
         		logger.trace("peer 包含角色：", PeerRole.EVENT_SOURCE);
