@@ -1,5 +1,6 @@
 package com.cnblogs.hoojo.fabric.sdk.entity;
 
+import org.hyperledger.fabric.sdk.ChaincodeCollectionConfiguration;
 import org.hyperledger.fabric.sdk.ChaincodeEndorsementPolicy;
 import org.hyperledger.fabric.sdk.ChaincodeID;
 import org.hyperledger.fabric.sdk.TransactionRequest.Type;
@@ -18,6 +19,7 @@ import org.hyperledger.fabric.sdk.User;
  */
 public class InstantiateUpgradeEntity extends TransactionEntity {
 
+	private ChaincodeCollectionConfiguration collectionConfiguration;
 	private ChaincodeEndorsementPolicy endorsementPolicy;
 	private User user;
 	
@@ -43,5 +45,13 @@ public class InstantiateUpgradeEntity extends TransactionEntity {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public ChaincodeCollectionConfiguration getCollectionConfiguration() {
+		return collectionConfiguration;
+	}
+
+	public void setCollectionConfiguration(ChaincodeCollectionConfiguration collectionConfiguration) {
+		this.collectionConfiguration = collectionConfiguration;
 	}
 }
