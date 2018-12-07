@@ -76,7 +76,7 @@ public class GoChaincodeIntegrationExamples {
 
 	private static final File storeFile = new File("HFCSampletest.properties");
 
-	private static final String channelName = "mychannel"; // foo bar
+	private static final String channelName = "foo"; // foo bar
 	protected static final String orgName = "peerOrg1";
 	
 	private static final String ADMIN_NAME = "admin";
