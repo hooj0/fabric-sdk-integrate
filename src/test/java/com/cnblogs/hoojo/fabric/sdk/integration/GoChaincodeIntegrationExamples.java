@@ -77,12 +77,11 @@ public class GoChaincodeIntegrationExamples {
 	private static final File storeFile = new File("HFCSampletest.properties");
 
 	private static final String channelName = "mychannel"; // foo bar
-	private static final String orgName = "peerOrg1";
-	
+	protected static final String orgName = "peerOrg1";
 	
 	private static final String ADMIN_NAME = "admin";
 	private static final String ADMIN_SECRET = "adminpw";
-	private static final String USER_NAME = "user1";
+	protected static final String USER_NAME = "user1";
 	
 	protected static String CHAIN_CODE_NAME = "example_cc_go";
 	protected static String CHAIN_CODE_PATH = "github.com/example_cc";
@@ -93,17 +92,17 @@ public class GoChaincodeIntegrationExamples {
 	private static final String EXPECTED_EVENT_NAME = "event";
 	private static final byte[] EXPECTED_EVENT_DATA = "!".getBytes(UTF_8);
 
-	private static final DefaultConfiguration config = DefaultConfiguration.getConfig();
+	protected static final DefaultConfiguration config = DefaultConfiguration.getConfig();
 	protected static ChaincodeID id = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION).build();
 	protected static ChaincodeID id_11 = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION_11).build();
 
 	private KeyValueFileStore store;
-	private HFClient client;
+	protected HFClient client;
 	
-	private UserManager userManager;
-	private ChannelManager channelManager;
-	private ChaincodeManager chaincodeManager;
-	private TransactionManager transactionManager;
+	protected UserManager userManager;
+	protected ChannelManager channelManager;
+	protected ChaincodeManager chaincodeManager;
+	protected TransactionManager transactionManager;
 	
 	@Before
 	public void checkConfig() throws Exception {
@@ -147,10 +146,8 @@ public class GoChaincodeIntegrationExamples {
 	@Test
 	public void testInstallChaincode() {
 		try {
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
+			Channel channel = getChannel();
 			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
 			
 			InstallEntity chaincode = new InstallEntity(id, CHAIN_CODE_LANG);
 			chaincode.setChaincodeSourceFile(Paths.get(config.getChaincodePath()).toFile());
@@ -174,10 +171,8 @@ public class GoChaincodeIntegrationExamples {
 	@Test
 	public void testInstantiateChaincode() {
 		try {
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
+			Channel channel = getChannel();
 			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
 			
 			InstantiateUpgradeEntity chaincode = new InstantiateUpgradeEntity(id, CHAIN_CODE_LANG);
 			chaincode.setEndorsementPolicy(chaincodeManager.getChaincodeEndorsementPolicy());
@@ -250,10 +245,8 @@ public class GoChaincodeIntegrationExamples {
 	public void testQueryChaincode() {
 		
 		try {
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
+			Channel channel = getChannel();
 			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
 			
 			client.setUserContext(org.getUser(USER_NAME));
 
@@ -278,11 +271,8 @@ public class GoChaincodeIntegrationExamples {
 	@Test
 	public void testInvokeChaincode() {
 		try {
-			
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
+			Channel channel = getChannel();
 			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
 			
 			//Vector<BaseChaincodeEvent> chaincodeEvents = new Vector<>();
 			//String handler = bindChaincodeEvent(chaincodeEvents, channel);
@@ -364,10 +354,8 @@ public class GoChaincodeIntegrationExamples {
 	@Test
 	public void testUpgradeChaincode() {
 		try {
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
+			Channel channel = getChannel();
 			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
 			
 			if (!chaincodeManager.checkChaincode(channel, id, org)) {
 				throw new AssertionError("chaincode 1 没有安装和实例化");
@@ -458,10 +446,7 @@ public class GoChaincodeIntegrationExamples {
 	public void testQuery() {
 		
 		try {
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
-			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
+			Channel channel = getChannel();
 			
 			BlockchainInfo channelInfo = channel.queryBlockchainInfo();
 
@@ -491,11 +476,7 @@ public class GoChaincodeIntegrationExamples {
 	@Test
 	public void testFilterEvent() {
 		try {
-			userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
-			
-			Organization org = config.getOrganization(orgName);
-			Channel channel = channelManager.initialize(channelName, org);
-			
+			Channel channel = getChannel();
 			
 			final Channel channel2 = channel;
 			//Iterator<Peer> iter = channel.getPeers().iterator();
@@ -667,6 +648,15 @@ public class GoChaincodeIntegrationExamples {
 			e.printStackTrace();
             throw new RuntimeException("检查区块事件异常", e);
 		}
+	}
+	
+	protected Channel getChannel() throws Exception {
+		userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
+		
+		Organization org = config.getOrganization(orgName);
+		Channel channel = channelManager.initialize(channelName, org);
+		
+		return channel;
 	}
 	
 	private static void print(String str, Object... args) {
