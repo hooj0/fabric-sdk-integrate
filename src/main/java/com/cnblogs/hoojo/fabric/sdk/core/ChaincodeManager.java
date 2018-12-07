@@ -179,6 +179,7 @@ public class ChaincodeManager extends AbstractTransactionManager {
 		instantiateRequest.setFcn(chaincode.getFunc());
 		instantiateRequest.setArgs(chaincode.getArgs());
 		instantiateRequest.setProposalWaitTime(config.getProposalWaitTime());
+		instantiateRequest.setChaincodeCollectionConfiguration(chaincode.getCollectionConfiguration());
 
 		Map<String, byte[]> transientMap = new HashMap<>();
 		transientMap.put("HyperLedgerFabric", "InstantiateProposalRequest:JavaSDK".getBytes(UTF_8));
