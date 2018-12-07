@@ -99,15 +99,6 @@ public class DefaultConfiguration {
 		InputStream stream;
 
 		try {
-			final String version = getFabricConfigGeneratorVersion();
-			if (!StringUtils.startsWith(version, "v")) {
-				throw new IllegalArgumentException("Expected Config 'FABRIC_CONFIG_GENERATOR_VERSION' or Env 'FAB_CONFIG_GEN_VERS' Must start with 'v' (eg: v1.0)");
-			}
-			final String[] versions = version.substring(1).split("\\.");
-	        if (versions.length != 2) {
-	        	throw new IllegalArgumentException("Expected Config 'FABRIC_CONFIG_GENERATOR_VERSION' or Env 'FAB_CONFIG_GEN_VERS' to be three numbers sperated by dots (v1.0)");
-	        }
-	        
 			// 读取 sdk 配置文件，没有就读取默认配置 DEFAULT_CONFIG
 			String configPath = System.getProperty(FABRIC_SDK_CONFIG, DEFAULT_SDK_CONFIG);
 			configFile = new File(configPath).getAbsoluteFile();
@@ -125,6 +116,15 @@ public class DefaultConfiguration {
 			logger.warn("加载SDK配置文件: {} 失败. 使用SDK默认配置", DEFAULT_SDK_CONFIG);
 		} finally {
 
+			final String version = getFabricConfigGeneratorVersion();
+			if (!StringUtils.startsWith(version, "v")) {
+				throw new IllegalArgumentException("Expected Config 'FABRIC_CONFIG_GENERATOR_VERSION' or Env 'FAB_CONFIG_GEN_VERS' Must start with 'v' (eg: v1.0)");
+			}
+			final String[] versions = version.substring(1).split("\\.");
+	        if (versions.length != 2) {
+	        	throw new IllegalArgumentException("Expected Config 'FABRIC_CONFIG_GENERATOR_VERSION' or Env 'FAB_CONFIG_GEN_VERS' to be three numbers sperated by dots (v1.0)");
+	        }
+	        
 			configurationDefaultValues();
 			
 			// TLS 
@@ -241,7 +241,7 @@ public class DefaultConfiguration {
 	
 	private void configurationDefaultValues() {
 		// Default values
-		defaultProperty(INVOKE_WAIT_TIME, "120");
+		defaultProperty(INVOKE_WAIT_TIME, "220");
 		defaultProperty(DEPLOY_WAIT_TIME, "120000");
 		defaultProperty(PROPOSAL_WAIT_TIME, "120000");
 
@@ -482,7 +482,10 @@ public class DefaultConfiguration {
 	
 	/** crypto-config & channel-artifacts 根目录 */
 	public String getCryptoTxConfigRootPath() {
-		return Paths.get(getCommonConfigRootPath(), getSDKProperty(CRYPTO_TX_CONFIG_ROOT_PATH, "/e2e-2Orgs/"), getFabricConfigGeneratorVersion()).toString();
+		String path = getCommonConfigRootPath();
+		String netconfig = getSDKProperty(CRYPTO_TX_CONFIG_ROOT_PATH, "/e2e-2Orgs/");
+		String version = getFabricConfigGeneratorVersion();
+		return Paths.get(path, netconfig, version).toString();
 	}
 	
 	/** 通道配置路径 */
