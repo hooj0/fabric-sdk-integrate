@@ -72,6 +72,11 @@ import com.google.gson.Gson;
  * `end 2 end` JavaSDK use API RestoreEnd2EndAndBackAgainExamples
  * 可以重复运行本示例而不需要重启网络
  * 
+ * 安装链码
+ * 升级链码
+ * 执行交易
+ * 查询交易
+ * 
  * @author hoojo
  * @createDate 2018年6月19日 上午9:47:29
  * @file End2EndAndBackAgainExamples.java
