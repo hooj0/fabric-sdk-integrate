@@ -88,8 +88,10 @@ import com.google.common.collect.Lists;
 
 /**
  * `end 2 end` JavaSDK use API RestoreEnd2EndExamples
- * 
  * 恢复运行本示例而不需要重启网络 
+ * 
+ * 执行 invoke 方法 和 query 方法
+ * 不安装、升级、实例化链码操作
  * 
  * @author hoojo
  * @createDate 2018年6月12日 下午4:31:43
