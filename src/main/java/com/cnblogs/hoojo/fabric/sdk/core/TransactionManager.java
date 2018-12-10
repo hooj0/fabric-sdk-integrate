@@ -78,9 +78,9 @@ public class TransactionManager extends AbstractTransactionManager {
             
             // 添加——到分类账的提案中的瞬时数据
             Map<String, byte[]> transientMap = new HashMap<>();
-            transientMap.put("HyperLedgerFabric", "TransactionProposalRequest:JavaSDK".getBytes(UTF_8)); //Just some extra junk in transient map
-            transientMap.put("method", "TransactionProposalRequest".getBytes(UTF_8)); // ditto
-            transientMap.put("result", ":)".getBytes(UTF_8));  // This should be returned see chaincode why.
+            //transientMap.put("HyperLedgerFabric", "TransactionProposalRequest:JavaSDK".getBytes(UTF_8)); //Just some extra junk in transient map
+            //transientMap.put("method", "TransactionProposalRequest".getBytes(UTF_8)); // ditto
+            //transientMap.put("result", ":)".getBytes(UTF_8));  // This should be returned see chaincode why.
 
             if (transaction.getTransientMap() != null) {
             	transientMap.putAll(transaction.getTransientMap());
@@ -131,8 +131,9 @@ public class TransactionManager extends AbstractTransactionManager {
             String resultAsString = null;
             if (chaincodeBytes != null) {
                 resultAsString = new String(chaincodeBytes, UTF_8);
+                System.out.println("resultAsString: " + resultAsString);
             }
-            checkArgument(StringUtils.equals(":)", resultAsString), "{} :和定义的账本数据不一致", resultAsString);
+            //checkArgument(StringUtils.equals(":)", resultAsString), "{} :和定义的账本数据不一致", resultAsString);
             checkState(response.getChaincodeActionResponseStatus() == Status.SUCCESS.getStatus(), "{}：非正常的响应状态码", response.getChaincodeActionResponseStatus());
             
             TxReadWriteSetInfo readWriteSetInfo = response.getChaincodeActionResponseReadWriteSetInfo();
@@ -180,8 +181,8 @@ public class TransactionManager extends AbstractTransactionManager {
 			request.setArgs(transaction.getArgs());
 			
 			Map<String, byte[]> transientMap = new HashMap<>();
-			transientMap.put("HyperLedgerFabric", "QueryByChaincodeRequest:JavaSDK".getBytes(UTF_8));
-			transientMap.put("method", "QueryByChaincodeRequest".getBytes(UTF_8));
+			//transientMap.put("HyperLedgerFabric", "QueryByChaincodeRequest:JavaSDK".getBytes(UTF_8));
+			//transientMap.put("method", "QueryByChaincodeRequest".getBytes(UTF_8));
 			
 			if (transaction.getTransientMap() != null) {
 				transientMap.putAll(transaction.getTransientMap());
