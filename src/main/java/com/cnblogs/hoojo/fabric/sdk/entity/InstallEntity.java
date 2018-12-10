@@ -25,6 +25,7 @@ public class InstallEntity extends ChaincodeEntity {
 	private File chaincodeSourceFile;
 	/** chaincode source code file stream， chaincodeSourceFile 和  chaincodeSourceStream 二选一 */
 	private InputStream chaincodeSourceStream;
+	private File chaincodeMetaINF;
 	
 	public InstallEntity(ChaincodeID chaincodeId, Type language) {
 		super(chaincodeId, language);
@@ -57,5 +58,13 @@ public class InstallEntity extends ChaincodeEntity {
 
 	public void setChaincodeVersion(String chaincodeVersion) {
 		this.chaincodeVersion = chaincodeVersion;
+	}
+
+	public File getChaincodeMetaINF() {
+		return chaincodeMetaINF;
+	}
+
+	public void setChaincodeMetaINF(File chaincodeMetaINF) {
+		this.chaincodeMetaINF = chaincodeMetaINF;
 	}
 }
