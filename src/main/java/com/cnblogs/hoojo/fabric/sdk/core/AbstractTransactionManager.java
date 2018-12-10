@@ -57,7 +57,9 @@ public abstract class AbstractTransactionManager extends ApplicationLogging {
 	public CompletableFuture<TransactionEvent> sendTransaction(Collection<ProposalResponse> responses, SendTransactionEntity transaction, Channel channel) throws Exception {
 
 		CompletableFuture<TransactionEvent> future = null;
-		if (transaction.getOrderers() != null && transaction.getUser() != null) {
+		if (transaction == null) {
+			future = channel.sendTransaction(responses);
+		} else if (transaction.getOrderers() != null && transaction.getUser() != null) {
 			future = channel.sendTransaction(responses, transaction.getOrderers(), transaction.getUser());
 		} else if (transaction.getOptions() != null) {
 			future = channel.sendTransaction(responses, transaction.getOptions());
