@@ -545,6 +545,13 @@ public class End2EndExamples extends ApplicationLogging {
     		File chaincodeFile = Paths.get(CONFIG_ROOT_PATH, CHAIN_CODE_FILEPATH).toFile();
     		logger.debug("Foo-Chaincode path: {}", chaincodeFile.getAbsolutePath());
     		installRequest.setChaincodeSourceLocation(chaincodeFile);
+    		
+    		if (config.isFabricVersionAtOrAfter("1.1")) { // Fabric 1.1 added support for  META-INF in the chaincode image.
+
+                //This sets an index on the variable a in the chaincode // see http://hyperledger-fabric.readthedocs.io/en/master/couchdb_as_state_database.html#using-couchdb-from-chaincode
+                // The file IndexA.json as part of the META-INF will be packaged with the source to create the index.
+    			//installRequest.setChaincodeMetaInfLocation(new File("src/test/fixture/meta-infs/end2endit"));
+            }
     	} else {
     		InputStream stream = null;
     		if (CHAIN_CODE_LANG.equals(Type.GO_LANG)) {
@@ -1022,6 +1029,7 @@ public class End2EndExamples extends ApplicationLogging {
             request.setTransientMap(transientMap);
             
             // 发送——交易请求
+            // Collection<ProposalResponse> transactionPropResp = channel.sendTransactionProposalToEndorsers(request);
             Collection<ProposalResponse> responses = channel.sendTransactionProposal(request, channel.getPeers());
             logger.info("向 channel.Peers节点——发起交易“提议”请求，参数: {}", json(request));
             
@@ -1530,7 +1538,7 @@ public class End2EndExamples extends ApplicationLogging {
 
     }
 
-	private static void out(String format, Object... args) {
+	protected static void out(String format, Object... args) {
 		System.err.flush();
 		System.out.flush();
 		System.out.println("\n\n" + format(format, args));
