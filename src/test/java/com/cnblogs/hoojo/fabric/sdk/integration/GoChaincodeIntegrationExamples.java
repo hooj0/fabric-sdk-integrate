@@ -498,7 +498,12 @@ public class GoChaincodeIntegrationExamples {
 			int stop = -1;
 			
 			// 设置 事件角色类型 选项
-	        final PeerOptions eventingPeerOptions = createPeerOptions().setPeerRoles(EnumSet.of(PeerRole.EVENT_SOURCE));
+	        final PeerOptions eventingPeerOptions = createPeerOptions();
+	        if (config.isFabricVersionAtOrAfter("1.3")) {
+	        	eventingPeerOptions.setPeerRoles(EnumSet.of(PeerRole.ENDORSING_PEER, PeerRole.LEDGER_QUERY, PeerRole.CHAINCODE_QUERY, PeerRole.EVENT_SOURCE)); //Default is all roles.
+            } else {
+            	eventingPeerOptions.setPeerRoles(EnumSet.of(PeerRole.EVENT_SOURCE));
+            }
 	        eventingPeerOptions.registerEventsForFilteredBlocks(); // 注册一个 过滤区块 的事件模型
 
 	        // 支持事件过滤 对等节点
@@ -651,6 +656,10 @@ public class GoChaincodeIntegrationExamples {
 	}
 	
 	protected Channel getChannel() throws Exception {
+		return this.getChannel(channelName);
+	}
+	
+	protected Channel getChannel(String channelName) throws Exception {
 		userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
 		
 		Organization org = config.getOrganization(orgName);
