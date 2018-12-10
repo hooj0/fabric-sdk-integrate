@@ -71,7 +71,7 @@ public class ServiceDiscoveryExample {
 
     
     		 // 除非您编辑主机文件，否则服务发现报告的主机名将不起作用
-    @Ignore  //Hostnames reported by service discovery won't work unless you edit hostfile
+    //@Ignore  //Hostnames reported by service discovery won't work unless you edit hostfile
     @Test
     public void setup() throws Exception {
     	out("\n\n\nRUNNING: %s.\n", "ServiceDiscovery Example");
@@ -86,7 +86,7 @@ public class ServiceDiscoveryExample {
         
         Organization org = CONFIG.getOrganization(ORG_NAME);
         @SuppressWarnings("unused")
-		OrganizationUser peerAdmin = store.getMember(ADMIN_NAME, org.getName());
+		//OrganizationUser peerAdmin = store.getMember(ADMIN_NAME, org.getName());
         OrganizationUser user = store.getMember(USER_NAME, org.getName());
 
         final HFClient client = HFClient.createNewInstance();
