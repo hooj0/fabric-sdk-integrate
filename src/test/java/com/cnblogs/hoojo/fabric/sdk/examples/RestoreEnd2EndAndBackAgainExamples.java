@@ -722,10 +722,12 @@ public class RestoreEnd2EndAndBackAgainExamples {
             assertFalse("通道不存在NO_EVENT_SOURCE事件的Peer节点", channel.getPeers(PeerRole.NO_EVENT_SOURCE).isEmpty());
 
         }
-        assertEquals("事件总线长度不为2", 2, channel.getEventHubs().size());
         
+        if (config.isFabricVersionBefore("1.3")) {
+        	assertEquals("事件总线长度不为2", 2, channel.getEventHubs().size());
+        }
         print("成功恢复通道：%s", channelName);
-        
+
         return channel;
     }
     
