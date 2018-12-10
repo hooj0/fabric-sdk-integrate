@@ -147,7 +147,9 @@ public class DefaultConfiguration {
 
 				addPeerLocation(organization, orgName);
 				addOrdererLocation(organization, orgName);
-				addEventHubLocation(organization, orgName);
+				if (this.isFabricVersionBefore("1.3")) {
+					addEventHubLocation(organization, orgName);
+				}
 
 				setCAProperties(organization, orgName);
 				
@@ -241,7 +243,7 @@ public class DefaultConfiguration {
 	
 	private void configurationDefaultValues() {
 		// Default values
-		defaultProperty(INVOKE_WAIT_TIME, "220");
+		defaultProperty(INVOKE_WAIT_TIME, "32000");
 		defaultProperty(DEPLOY_WAIT_TIME, "120000");
 		defaultProperty(PROPOSAL_WAIT_TIME, "120000");
 
