@@ -668,6 +668,14 @@ public class GoChaincodeIntegrationExamples {
 		return channel;
 	}
 	
+	protected Organization getOrganization(String orgName) throws Exception {
+		userManager.initialize(ADMIN_NAME, ADMIN_SECRET, USER_NAME);
+		
+		Organization org = config.getOrganization(orgName);
+		
+		return org;
+	}
+	
 	private static void print(String str, Object... args) {
 		System.out.println(String.format(str, args));
 	}
