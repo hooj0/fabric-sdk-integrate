@@ -53,8 +53,9 @@ import com.google.common.collect.Maps;
  */
 public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 
-	private String CHAIN_CODE_LOCATION = "sdkintegration/gocc/samplePrivateData";
-
+	private static final String CHAIN_CODE_LOCATION = "gocc/samplePrivateData";
+	private static final String channelName = "bar";
+	
 	{
 		CHAIN_CODE_LANG = Type.GO_LANG;
 	    CHAIN_CODE_NAME = "private_data_cc1_go";
@@ -63,14 +64,14 @@ public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 	    id = ChaincodeID.newBuilder().setName(CHAIN_CODE_NAME).setPath(CHAIN_CODE_PATH).setVersion(CHAIN_CODE_VERSION).build();
 	}
 	
-
 	@Test
 	public void testInstallChaincode() {
 		try {
-			Channel channel = getChannel();
+			Channel channel = getChannel(channelName);
 			Organization org = config.getOrganization(orgName);
 			
 			InstallEntity chaincode = new InstallEntity(id, CHAIN_CODE_LANG);
+			chaincode.setLanguage(CHAIN_CODE_LANG);
 			chaincode.setChaincodeSourceFile(Paths.get(config.getCommonConfigRootPath(), CHAIN_CODE_LOCATION).toFile());
 			
 			client.setUserContext(org.getPeerAdmin());
@@ -92,16 +93,17 @@ public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 	@Test
 	public void testInstantiateChaincode() {
 		try {
-			Channel channel = getChannel();
+			Channel channel = getChannel(channelName);
 			Organization org = config.getOrganization(orgName);
 			
 			InstantiateUpgradeEntity chaincode = new InstantiateUpgradeEntity(id, CHAIN_CODE_LANG);
 			chaincode.setEndorsementPolicy(chaincodeManager.getChaincodeEndorsementPolicy());
 			chaincode.setFunc("init");
 			chaincode.setArgs(new String[] {});
-			chaincode.setSpecificPeers(true);
+			chaincode.setSpecificPeers(false); // false
+			chaincode.setLanguage(CHAIN_CODE_LANG);
 			
-			File file = Paths.get(config.getCommonConfigRootPath(), "collectionProperties/PrivateDataIT.yaml").toFile();
+			File file = Paths.get("src/test/fixture", "collectionProperties/PrivateDataIT.yaml").toFile();
 			ChaincodeCollectionConfiguration collectionConfiguration = ChaincodeCollectionConfiguration.fromYamlFile(file);
 			chaincode.setCollectionConfiguration(collectionConfiguration);
 			
@@ -167,53 +169,24 @@ public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 	}
 	
 	@Test
-	public void testQueryChaincode() {
+	public void testSetAmount() {
+		int val = 50;
+		
 		try {
-			Channel channel = getChannel();
-			Organization org = config.getOrganization(orgName);
-			
-			client.setUserContext(org.getUser(USER_NAME));
-
-			TransactionEntity transaction = new TransactionEntity(id, CHAIN_CODE_LANG);
-			transaction.setFunc("query");
-			
-			Map<String, byte[]> tmap = new HashMap<>();
-            tmap.put("B", "b".getBytes(UTF_8)); // test using bytes as args. End2end uses Strings.
-            transaction.setTransientMap(tmap);
-			
-			String account = transactionManager.queryChaincode(channel, transaction);
-			System.out.println("account a: " + account);
-			
-
-			transaction.setArgs(new String[] { "b" });
-			transaction.setFunc("query");
-			
-			account = transactionManager.queryChaincode(channel, transaction);
-			System.out.println("account b: " + account);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@Test
-	public void testInvokeAmount() {
-		String moveAmount = "5";
-
-		try {
-			Channel channel = getChannel();
+			Channel channel = getChannel(channelName);
 			Organization org = config.getOrganization(orgName);
 			
 			TransactionEntity transaction = new TransactionEntity(id, CHAIN_CODE_LANG);
-			transaction.setFunc("move");
+			transaction.setFunc("set");
+			transaction.setArgs(new String[] {});
 			
 			Map<String, byte[]> transientMap = Maps.newHashMap();
-			transientMap.put("A", "a".getBytes(UTF_8)); //test using bytes .. end2end uses Strings.
+			transientMap.put("A", "a".getBytes(UTF_8));   // test using bytes as args. End2end uses Strings.
+            transientMap.put("AVal", "500".getBytes(UTF_8));
             transientMap.put("B", "b".getBytes(UTF_8));
-			transientMap.put("moveAmount", moveAmount.getBytes(UTF_8));
+            transientMap.put("BVal", String.valueOf(200 + val).getBytes(UTF_8));
 			
 			transaction.setTransientMap(transientMap);
-			
-			client.setUserContext(org.getUser(USER_NAME));
 			
 			Collection<ProposalResponse> responses = transactionManager.invokeChaincode(channel, transaction);
 			
@@ -233,20 +206,6 @@ public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 	    		try {
 	    			System.out.println("成功交易，本次实例化交易ID：" +  transactionEvent.getTransactionID());
 	    			checkArgument(StringUtils.equals(blockEvent.getChannelId(), channel.getName()), "事件名称和对应通道名称不一致");
-	    			
-	    			client.setUserContext(org.getUser(USER_NAME));
-
-		    		transaction.setArgs(new String[] { "a" });
-		    		transaction.setFunc("query");
-					String account = transactionManager.queryChaincode(channel, transaction);
-					System.out.println("account a: " + account);
-					
-
-					transaction.setArgs(new String[] { "b" });
-					transaction.setFunc("query");
-					account = transactionManager.queryChaincode(channel, transaction);
-					System.out.println("account b: " + account);
-					
 				} catch (Exception e) {
 		            throw new RuntimeException(e);
 				}
@@ -278,32 +237,49 @@ public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 	}
 	
 	@Test
-	public void testSetAmount() {
-		int val = 50;
-		
+	public void testQueryChaincode() {
 		try {
-			Channel channel = getChannel();
+			Channel channel = getChannel(channelName);
 			Organization org = config.getOrganization(orgName);
 			
+			client.setUserContext(org.getUser(USER_NAME));
+
 			TransactionEntity transaction = new TransactionEntity(id, CHAIN_CODE_LANG);
-			transaction.setFunc("set");
+			transaction.setFunc("query");
+			transaction.setArgs(new String[] {});
+			
+			Map<String, byte[]> tmap = new HashMap<>();
+            tmap.put("B", "b".getBytes(UTF_8)); // test using bytes as args. End2end uses Strings.
+            transaction.setTransientMap(tmap);
+			
+			String account = transactionManager.queryChaincode(channel, transaction);
+			System.out.println("account b: " + account);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testInvokeAmount() {
+		String moveAmount = "5";
+
+		try {
+			Channel channel = getChannel(channelName);
+			
+			TransactionEntity transaction = new TransactionEntity(id, CHAIN_CODE_LANG);
+			transaction.setFunc("move");
+			transaction.setArgs(new String[] {});
 			
 			Map<String, byte[]> transientMap = Maps.newHashMap();
-			transientMap.put("A", "a".getBytes(UTF_8));   // test using bytes as args. End2end uses Strings.
-            transientMap.put("AVal", "500".getBytes(UTF_8));
+			transientMap.put("A", "a".getBytes(UTF_8)); //test using bytes .. end2end uses Strings.
             transientMap.put("B", "b".getBytes(UTF_8));
-            transientMap.put("BVal", String.valueOf(200 + val).getBytes(UTF_8));
+			transientMap.put("moveAmount", moveAmount.getBytes(UTF_8));
 			
 			transaction.setTransientMap(transientMap);
 			
-			client.setUserContext(org.getUser(USER_NAME));
-			
 			Collection<ProposalResponse> responses = transactionManager.invokeChaincode(channel, transaction);
 			
-			SendTransactionEntity sendTransaction = new SendTransactionEntity();
-			sendTransaction.setUser(org.getUser(USER_NAME));
-			
-			CompletableFuture<TransactionEvent> future = transactionManager.sendTransaction(responses, sendTransaction, channel);
+			CompletableFuture<TransactionEvent> future = transactionManager.sendTransaction(responses, null, channel);
 			Object result = future.thenApply((BlockEvent.TransactionEvent transactionEvent) -> {
 				
 				// 必须是有效交易事件
@@ -349,13 +325,14 @@ public class PrivateDataExample extends GoChaincodeIntegrationExamples {
 	@Test
 	public void testCollectionData() throws Exception {
 		if (config.isFabricVersionAtOrAfter("1.3")) {
-			Channel channel = getChannel();
+			Channel channel = getChannel(channelName);
 
 			Set<String> expect = new HashSet<>(Arrays.asList("COLLECTION_FOR_A", "COLLECTION_FOR_B"));
 			Set<String> got = new HashSet<>();
 
 			CollectionConfigPackage packages = channel.queryCollectionsConfig(CHAIN_CODE_NAME, channel.getPeers().iterator().next(), config.getOrganization(orgName).getPeerAdmin());
 			for (CollectionConfigPackage.CollectionConfig collectionConfig : packages.getCollectionConfigs()) {
+				System.out.println(collectionConfig.getName());
 				got.add(collectionConfig.getName());
 
 			}
