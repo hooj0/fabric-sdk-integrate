@@ -146,7 +146,7 @@ func (t *SimpleChaincode) set(stub shim.ChaincodeStubInterface, args []string) p
 		return shim.Error("Error getting transient: " + err.Error())
 	}
 
-	if len(transMap) !=4 {
+	if len(transMap) != 4 {
 		return shim.Error("Incorrect number of arguments. Expecting 4, function followed by 2 names and 2 values, got " + strconv.Itoa(len(transMap)))
 	}
 
@@ -197,7 +197,7 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 			return shim.Error("Error getting transient: " + err.Error())
 	}
 
-	if len(transMap) !=1 {
+	if len(transMap) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1, function followed by query key, got " + strconv.Itoa(len(transMap)))
 	}
 
