@@ -3,6 +3,7 @@ package com.cnblogs.hoojo.fabric.sdk.examples;
 import org.hyperledger.fabric.sdk.Enrollment;
 import org.hyperledger.fabric_ca.sdk.HFCAClient;
 import org.hyperledger.fabric_ca.sdk.RegistrationRequest;
+import org.junit.Test;
 
 import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 import com.cnblogs.hoojo.fabric.sdk.model.OrganizationUser;
@@ -61,10 +62,16 @@ public class End2EndIdemixExamples extends End2EndExamples {
             if (org.getName().contains("Org2")) {
                 mspID = "idemixMSPID2";
             }
+            out("enroll user: %s, msp: %s", user.getName(), mspID);
             //user.setEnrollment(ca.idemixEnroll(user.getEnrollment(), mspID));
             user.setIdemixEnrollment(ca.idemixEnroll(user.getEnrollment(), mspID));
         }
 		
 		return user;
+	}
+	
+	@Test
+	public void setup() throws Exception {
+		super.setup();
 	}
 }
