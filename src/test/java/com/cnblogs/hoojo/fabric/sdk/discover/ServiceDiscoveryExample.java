@@ -39,6 +39,8 @@ import com.cnblogs.hoojo.fabric.sdk.model.Organization;
  * service discovery example
  * 服务发现示例，需要在 End2EndExamples 示例运行后，执行本示例
  * 
+ * 在本地host文件中添加配置：
+ * 192.168.99.100 localhost orderer.example.com peer0.org1.example.com peer1.org1.example.com
  * @author hoojo
  * @createDate 2018年12月6日 下午3:36:47
  * @file ServiceDiscoveryExample.java
@@ -51,7 +53,7 @@ import com.cnblogs.hoojo.fabric.sdk.model.Organization;
 public class ServiceDiscoveryExample extends GoChaincodeIntegrationExamples {
 	
 	private static final DefaultConfiguration CONFIG = DefaultConfiguration.getConfig();
-	private static final String host = "192.168.99.100";
+	private static final String host = "peer0.org1.example.com";//"192.168.99.100";
 	
 	private static final Type CHAIN_CODE_LANG = Type.GO_LANG;
 	private static final String FOO_CHANNEL_NAME = "foo";
@@ -103,6 +105,10 @@ public class ServiceDiscoveryExample extends GoChaincodeIntegrationExamples {
                 discoverProps.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.localhost:7050", "orderer.example.com");
                 discoverProps.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.localhost:7051", "peer0.org1.example.com");
                 discoverProps.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.localhost:7056", "peer1.org1.example.com");
+                
+                discoverProps.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.orderer.example.com:7050", "orderer.example.com");
+                discoverProps.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.peer0.org1.example.com:7051", "peer0.org1.example.com:7051");
+                discoverProps.put("org.hyperledger.fabric.sdk.discovery.endpoint.hostnameOverride.peer1.org1.example.com:7051", "peer1.org1.example.com:7056");
             } else {
                 discoverProps.put("org.hyperledger.fabric.sdk.discovery.default.protocol", "grpc:");
             }
@@ -116,6 +122,11 @@ public class ServiceDiscoveryExample extends GoChaincodeIntegrationExamples {
             checkState(channel.isInitialized(), "通道未初始化");
     		checkState(!channel.isShutdown(), "通道被关闭");
             
+    		Collection<Peer> peers = channel.getPeers();
+    		for (Peer peer : peers) {
+    			System.out.println("loop peer: " + peer.getUrl());
+    		}
+    		
             Set<String> expect = new HashSet<>(Arrays.asList(protocol + "//orderer.example.com:7050")); //discovered orderer
             System.out.println(expect);
             for (Orderer orderer : channel.getOrderers()) {
@@ -147,6 +158,8 @@ public class ServiceDiscoveryExample extends GoChaincodeIntegrationExamples {
             Collection<ProposalResponse> proposalResponses = channel.sendTransactionProposalToEndorsers(transactionProposalRequest, discoveryOptions);
             //assertFalse(proposalResponses.isEmpty()); // 交易成功
             System.out.println("proposalResponses: " + proposalResponses.size());
+            // org1 peer中的任意一个peer节点
+            System.out.println("peer: " + proposalResponses.iterator().next().getPeer().getUrl());
 
             // 再次发送交易
             transactionProposalRequest = client.newTransactionProposalRequest();
@@ -162,14 +175,18 @@ public class ServiceDiscoveryExample extends GoChaincodeIntegrationExamples {
                     // aka peer0.org1.example.com our discovery peer. Lets ignore it in endorsers selection and see if other discovered peer endorses.
             		// 名peer0.org1.example.com是我们的发现同行。 让我们在代言人的选择中忽略它，看看其他被发现的同伴是否赞同
                     "peer0.org1.example.com:7051")
+                    //.setInspectResults(true)
+                    
                     // if chaincode makes additional chaincode calls or uses collections you should add them with setServiceDiscoveryChaincodeInterests
                     // 如果chaincode进行额外的链代码调用或使用集合，则应使用setServiceDiscoveryChaincodeInterests添加它们
                     //.setServiceDiscoveryChaincodeInterests(Channel.ServiceDiscoveryChaincodeCalls.createServiceDiscoveryChaincodeCalls("someOtherChaincodeName").addCollections("collection1", "collection2"))
                     );
+            System.out.println("next peer: " + proposalResponses.iterator().next().getPeer().getUrl());
             assertEquals(proposalResponses.size(), 1); // 1个交易结果
             
             final ProposalResponse proposalResponse = proposalResponses.iterator().next();
             final Peer peer = proposalResponse.getPeer();
+            // 由于忽略了 peer0，这里必然是peer1节点
             assertEquals(protocol + "//peer1.org1.example.com:7056", peer.getUrl()); // not our discovery peer but the discovered one.
 
             String expectedTransactionId = null;
@@ -201,7 +218,7 @@ public class ServiceDiscoveryExample extends GoChaincodeIntegrationExamples {
             // 交易id一致
             assertEquals(expectedTransactionId, evenTransactionId.toString());
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw e;
 		}
         out("That's all folks!");
     }
