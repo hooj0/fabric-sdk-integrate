@@ -8,6 +8,8 @@
     
     <logger name="io.netty" level="ERROR" />
     <logger name="io.grpc.netty" level="ERROR" />
+    <logger name="org.hyperledger.fabric.sdk" level="TRACE" />
+    <logger name="org.hyperledger.fabric.sdk.Channel" level="TRACE" />
     
     <Loggers>
         <Root level="trace">
