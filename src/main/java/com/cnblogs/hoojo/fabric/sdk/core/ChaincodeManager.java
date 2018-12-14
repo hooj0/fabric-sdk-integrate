@@ -131,7 +131,6 @@ public class ChaincodeManager extends AbstractTransactionManager {
 			logger.debug("ChaincodeMetaINF path: {}", chaincode.getChaincodeMetaINF().getAbsolutePath());
 			installRequest.setChaincodeMetaInfLocation(chaincode.getChaincodeMetaINF());
 		} 
-
 		// 发送安装请求
 		// 只有来自同一组织的客户端才能发出安装请求
 		Collection<Peer> peers = channel.getPeers();
