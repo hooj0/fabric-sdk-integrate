@@ -76,7 +76,7 @@ public class GoChaincodeIntegrationExamples {
 
 	private static final File storeFile = new File("HFCSampletest.properties");
 
-	private static final String channelName = "foo"; // foo bar
+	private static final String channelName = "mychannel"; // foo bar
 	protected static final String orgName = "peerOrg1";
 	
 	private static final String ADMIN_NAME = "admin";
@@ -136,8 +136,8 @@ public class GoChaincodeIntegrationExamples {
 			Organization org = config.getOrganization(orgName);
 			channelManager.initialize(channelName, org);
 			
-			org = config.getOrganization("peerOrg2");
-			channelManager.initialize("bar", org);
+			//org = config.getOrganization("peerOrg2");
+			//channelManager.initialize("bar", org);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
