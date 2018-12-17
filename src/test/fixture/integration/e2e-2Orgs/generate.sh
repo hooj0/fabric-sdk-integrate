@@ -27,7 +27,7 @@ echo "CRYPTO_CONFIG_FILE: $CRYPTO_CONFIG_FILE"
 
 #version="_v11"
 version=""
-VERSION_DIR="v1.0"
+VERSION_DIR="v1.3"
 
 FABRIC_ROOT="/opt/gopath/src/github.com/hyperledger/fabric"
 export FABRIC_ROOT=$FABRIC_ROOT
@@ -91,6 +91,9 @@ function generateCerts (){
 	echo "##### Generate certificates using cryptogen tool #########"
 	echo "##########################################################"
 
+	echo "==> cryptogen version"
+	$CRYPTOGEN version
+
 	echo "==> cryptogen generate --config=./$CRYPTO_CONFIG_FILE --output=./$CRYPTO_CONFIG_OUTPUT_ROOT"
 	$CRYPTOGEN generate --config=./$CRYPTO_CONFIG_FILE --output=./$CRYPTO_CONFIG_OUTPUT_ROOT
 	echo
@@ -107,7 +110,10 @@ function generateChannelArtifacts() {
 	    echo "===> make -C $FABRIC_ROOT release"
 	    make -C $FABRIC_ROOT release
 	fi
-
+	
+	echo "==> configtxgen --version"
+	$CONFIGTXGEN --version
+	
     echo
 	echo "##########################################################"
 	echo "#########  Generating Orderer Genesis block ##############"
