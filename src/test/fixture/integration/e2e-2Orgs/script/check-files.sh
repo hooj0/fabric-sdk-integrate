@@ -3,36 +3,37 @@
 set -euo pipefail
 trap "echo 'error: Script failed: see failed command above'" ERR
 
-ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_TLS=false
-ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS=
-ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CLIENT_AUTH_REQUIRED=false
+#ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_TLS=false
+#ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS=
+#ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CLIENT_AUTH_REQUIRED=false
 
-IMAGE_TAG_FABRIC=:x86_64-1.1.0
-IMAGE_TAG_FABRIC_CA=:x86_64-1.1.0
+#FAB_CONFIG_GEN_VERS=v1.3
 
-FAB_CONFIG_GEN_VERS=v1.1
-
-V11_IDENTITIES_ALLOWREMOVE=--cfg.identities.allowremove
-V11_AFFILIATIONS_ALLOWREMOVE=--cfg.affiliations.allowremove
+#V11_IDENTITIES_ALLOWREMOVE=--cfg.identities.allowremove
+#V11_AFFILIATIONS_ALLOWREMOVE=--cfg.affiliations.allowremove
 
 function check_ca0() {
 	ls -l /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
-	ls -l /etc/hyperledger/fabric-ca-server-config/d246208ee2571a766382e32bffbe42ab648cc5f18871ac240b3f55b5c7561452_sk
+	ls -l /etc/hyperledger/fabric-ca-server-config/2664d7d2cdb7eedce9a570b9212a08a70cca920e52493e1f72850f37d35edf5b_sk
 	ls -l /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
-	ls -l /etc/hyperledger/fabric-ca-server-config/d246208ee2571a766382e32bffbe42ab648cc5f18871ac240b3f55b5c7561452_sk
+	ls -l /etc/hyperledger/fabric-ca-server-config/2664d7d2cdb7eedce9a570b9212a08a70cca920e52493e1f72850f37d35edf5b_sk
 	
-	fabric-ca-server start -n ca0 ${V11_IDENTITIES_ALLOWREMOVE} ${V11_AFFILIATIONS_ALLOWREMOVE} --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/d246208ee2571a766382e32bffbe42ab648cc5f18871ac240b3f55b5c7561452_sk -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/d246208ee2571a766382e32bffbe42ab648cc5f18871ac240b3f55b5c7561452_sk -d
+	cp -R /tmp/msp /etc/hyperledger/fabric-ca-server; 
+	mv /etc/hyperledger/fabric-ca-server/msp/*PublicKey /etc/hyperledger/fabric-ca-server; 
+	fabric-ca-server start -n ca0 ${V11_IDENTITIES_ALLOWREMOVE} ${V11_AFFILIATIONS_ALLOWREMOVE} --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/2664d7d2cdb7eedce9a570b9212a08a70cca920e52493e1f72850f37d35edf5b_sk -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/2664d7d2cdb7eedce9a570b9212a08a70cca920e52493e1f72850f37d35edf5b_sk -d
 }
 
 
 function check_ca1() {
 	ls -l /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
-	ls -l /etc/hyperledger/fabric-ca-server-config/7d1912b66548cb742c16ccec15b624f2c3e453f63347753fe9cda13729cee5c0_sk
+	ls -l /etc/hyperledger/fabric-ca-server-config/1587d2947a09b6a33c8aa2cbd9db8da2fd4bd87ccf509d56ab98a62d277d4a84_sk
 	
 	ls -l /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
-	ls -l /etc/hyperledger/fabric-ca-server-config/7d1912b66548cb742c16ccec15b624f2c3e453f63347753fe9cda13729cee5c0_sk
+	ls -l /etc/hyperledger/fabric-ca-server-config/1587d2947a09b6a33c8aa2cbd9db8da2fd4bd87ccf509d56ab98a62d277d4a84_sk
 	
-	fabric-ca-server start --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/7d1912b66548cb742c16ccec15b624f2c3e453f63347753fe9cda13729cee5c0_sk -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/7d1912b66548cb742c16ccec15b624f2c3e453f63347753fe9cda13729cee5c0_sk -d
+	cp -R /tmp/msp /etc/hyperledger/fabric-ca-server; 
+	mv /etc/hyperledger/fabric-ca-server/msp/*PublicKey /etc/hyperledger/fabric-ca-server; 
+	fabric-ca-server start --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/1587d2947a09b6a33c8aa2cbd9db8da2fd4bd87ccf509d56ab98a62d277d4a84_sk -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/1587d2947a09b6a33c8aa2cbd9db8da2fd4bd87ccf509d56ab98a62d277d4a84_sk -d
 }
 
 function check_orderer() {
