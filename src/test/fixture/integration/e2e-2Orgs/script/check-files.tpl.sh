@@ -3,14 +3,11 @@
 set -euo pipefail
 trap "echo 'error: Script failed: see failed command above'" ERR
 
-ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_TLS=false
-ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS=
-ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CLIENT_AUTH_REQUIRED=false
+ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_TLS=true
+ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS=--tls.enabled
+ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CLIENT_AUTH_REQUIRED=true
 
-IMAGE_TAG_FABRIC=:x86_64-1.1.0
-IMAGE_TAG_FABRIC_CA=:x86_64-1.1.0
-
-FAB_CONFIG_GEN_VERS=v1.1
+FAB_CONFIG_GEN_VERS=v1.3
 
 V11_IDENTITIES_ALLOWREMOVE=--cfg.identities.allowremove
 V11_AFFILIATIONS_ALLOWREMOVE=--cfg.affiliations.allowremove
@@ -21,11 +18,9 @@ function check_ca0() {
 	ls -l /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
 	ls -l /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY
 	
-	#fabric-ca-server start -n ca0 ${V11_IDENTITIES_ALLOWREMOVE} ${V11_AFFILIATIONS_ALLOWREMOVE} --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -d
-	
 	cp -R /tmp/msp /etc/hyperledger/fabric-ca-server; 
 	mv /etc/hyperledger/fabric-ca-server/msp/*PublicKey /etc/hyperledger/fabric-ca-server; 
-	fabric-ca-server start -b admin:adminpw ${V11_IDENTITIES_ALLOWREMOVE} ${V11_AFFILIATIONS_ALLOWREMOVE} ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY --tls.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -d
+	fabric-ca-server start -n ca0 ${V11_IDENTITIES_ALLOWREMOVE} ${V11_AFFILIATIONS_ALLOWREMOVE} --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY -d
 }
 
 
@@ -36,11 +31,9 @@ function check_ca1() {
 	ls -l /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem
 	ls -l /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY
 	
-	#fabric-ca-server start --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -d
-	
 	cp -R /tmp/msp /etc/hyperledger/fabric-ca-server; 
 	mv /etc/hyperledger/fabric-ca-server/msp/*PublicKey /etc/hyperledger/fabric-ca-server; 
-	fabric-ca-server start -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY --tls.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -d
+	fabric-ca-server start --registry.maxenrollments -1 --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -b admin:adminpw ${ORG_HYPERLEDGER_FABRIC_SDKTEST_INTEGRATIONTESTS_CA_TLS} --tls.certfile /etc/hyperledger/fabric-ca-server-config/ca.org2.example.com-cert.pem --tls.keyfile /etc/hyperledger/fabric-ca-server-config/CA2_PRIVATE_KEY -d
 }
 
 function check_orderer() {
