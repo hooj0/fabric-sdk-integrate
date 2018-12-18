@@ -26,7 +26,7 @@ echo "CRYPTO_CONFIG_OUTPUT_ROOT: $CRYPTO_CONFIG_OUTPUT_ROOT"
 echo "CRYPTO_CONFIG_FILE: $CRYPTO_CONFIG_FILE"
 
 #version="_v11"
-version=""
+version="_v13"
 VERSION_DIR="v1.3"
 
 FABRIC_ROOT="/opt/gopath/src/github.com/hyperledger/fabric"
