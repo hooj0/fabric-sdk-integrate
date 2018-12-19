@@ -1,0 +1,326 @@
+---
+#
+# The network connection profile provides client applications the information about the target
+# blockchain network that are necessary for the applications to interact with it. These are all 
+# knowledge that must be acquired from out-of-band sources. This file provides such a source.
+#
+# 网络连接配置文件为客户端应用程序提供有关目标的信息blockchain网络，是应用程序与之交互所必需的。 
+# 这些都是必须从带外源获取的知识。 该文件提供了这样的来源。
+name: "global-trade-network"
+
+#
+# Any properties with an "x-" prefix will be treated as application-specific, exactly like how naming
+# in HTTP headers or swagger properties work. The SDK will simply ignore these fields and leave
+# them for the applications to process. This is a mechanism for different components of an application
+# to exchange information that are not part of the standard schema described below. In particular,
+# the "x-type" property with the "hlfv1" value example below is used by Hyperledger Composer to
+# determine the type of Fabric networks (v0.6 vs. v1.0) it needs to work with.
+#
+# 具有“x-”前缀的任何属性都将被视为特定于应用程序，与HTTP标头或swagger属性中的命名方式完全相同。
+# SDK将忽略这些字段并留给应用程序进行处理。 这是应用程序的不同组件交换不属于下面描述的标准模式的信息的机制。 
+# 特别是，Hyperledger Composer使用下面带有“hlfv1”值示例的“x-type”属性来确定它需要使用的Fabric网络类型（v0.6与v1.0）。
+#
+x-type: "hlfv1"
+x-loggingLevel: info
+
+#
+# Describe what the target network is/does.
+#
+description: "The network to be in if you want to stay in the global trade business"
+
+#
+# Schema version of the content. Used by the SDK to apply the corresponding parsing rules.
+# 架构版本的内容。 SDK使用它来应用相应的解析规则。
+#
+version: 1.0.0
+
+#
+# The client section is SDK-specific. The sample below is for the node.js SDK
+# 客户端部分是特定于SDK的。 以下示例适用于node.js SDK
+#
+client:
+  # Which organization does this application instance belong to? The value must be the name of an org
+  # defined under "organizations"
+  # 该应用程序实例属于哪个组织？该值必须是组织的名称在“组织”下定义
+  organization: Org1
+
+  # set connection timeouts for the peer and orderer for the client
+  # 设置客户端的peer和orderer的连接超时
+  connection:
+    timeout:
+     peer:
+      endorser: 3s
+      eventHub: 3s
+      eventReg: 3s
+     orderer: 3s
+
+  # Needed to load users crypto keys and certs.
+  # 需要加载用户加密密钥和证书。
+  cryptoconfig:
+    path: path/to/fixtures/channel/crypto-config
+
+  # Some SDKs support pluggable KV stores, the properties under "credentialStore" 
+  # are implementation specific
+  # 一些SDK支持可插拔的KV商店，“credentialStore”下的属性是特定于实现的
+  credentialStore:
+    # [Optional]. Specific to FileKeyValueStore.js or similar implementations in other SDKs. Can be others
+    # if using an alternative impl. For instance, CouchDBKeyValueStore.js would require an object
+    # here for properties like url, db name, etc.
+    #
+    # 特定于FileKeyValueStore.js或其他SDK中的类似实现。 如果使用替代impl，可以是其他人。 
+    # 例如，CouchDBKeyValueStore.js需要一个对象来获取url，db name等属性。
+    path: "/tmp/hfc-kvs"
+
+    # [Optional]. Specific to the CryptoSuite implementation. Software-based implementations like 
+    # CryptoSuite_ECDSA_AES.js in node SDK requires a key store. PKCS#11 based implementations does 
+    # not.
+    # [可选的] 具体到CryptoSuite实现。
+    # 基于软件的实现节点SDK中的CryptoSuite_ECDSA_AES.js需要密钥库。基于PKCS 11的实现确实如此不。
+    cryptoStore:
+      # Specific to the underlying KeyValueStore that backs the crypto key store. 
+      # 特定于支持加密密钥库的底层KeyValueStore。
+      path: "/tmp/hfc-cvs"
+
+    # [Optional]. Specific to Composer environment
+    # 特定于Composer环境
+    wallet: wallet-name
+
+  # BCCSP config for the client.
+  BCCSP:
+   security:
+    enabled: true
+    default:
+     provider: "SW"
+    hashAlgorithm: "SHA2"
+    softVerify: true
+    ephemeral: false
+    level: 256
+    pin: "12345678"
+    label: "ForFabric"
+    library: /path/to/bccsp/libraries
+
+#
+# [Optional]. But most apps would have this section so that channel objects can be constructed 
+# based on the content below. If an app is creating channels, then it likely will not need this 
+# section.
+#
+# 但大多数应用程序都有此部分，以便可以构建通道对象基于以下内容。
+# 如果某个应用正在创建频道，则可能不需要此功能部分。
+channels:
+  # name of the channel
+  mychannel:
+    # Required. list of orderers designated by the application to use for transactions on this 
+    # channel. This list can be a result of access control ("org1" can only access "ordererA"), or 
+    # operational decisions to share loads from applications among the orderers.  The values must 
+    # be "names" of orgs defined under "organizations/peers"
+    #
+    # 需要。申请人指定的用于此次交易的订货人名单渠道。
+    # 此列表可以是访问控制的结果（“org1”只能访问“ordererA”），或在运营商之间共享来自应用程序的负载的运营决策。
+    # 值必须是“组织/同行”下定义的组织的“名称”
+    orderers:
+      - orderer.example.com
+
+    # Required. list of peers from participating orgs
+    # 来自参与组织的同行列表
+    peers:
+      peer0.org1.example.com:
+        # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must 
+        # have the chaincode installed. The app can also use this property to decide which peers 
+        # to send the chaincode install request. Default: true
+        #
+        # 这个同行会被发送交易提案以获得认可吗？同行必须安装了链代码。
+        # 该应用程序还可以使用此属性来决定哪些对等方发送链代码安装请求。默认值：true
+        endorsingPeer: true
+
+        # [Optional]. will this peer be sent query proposals? The peer must have the chaincode
+        # installed. The app can also use this property to decide which peers to send the 
+        # chaincode install request. Default: true
+        #
+        # 这个同行会被发送查询提案吗？对等体必须具有链码已安装。
+        # 该应用程序还可以使用此属性来决定发送哪些对等项chaincode安装请求。默认值：true
+        chaincodeQuery: true
+
+        # [Optional]. will this peer be sent query proposals that do not require chaincodes, like 
+        # queryBlock(), queryTransaction(), etc. Default: true
+        #
+        # 这个对等体是否会被发送不需要链码的查询提案，
+        # 比如 queryBlock() queryTransaction()等。默认值：true
+        ledgerQuery: true
+
+        # [Optional]. will this peer be the target of the SDK's listener registration? All peers can 
+        # produce events but the app typically only needs to connect to one to listen to events. 
+        # Default: true
+        #
+        # 这个对等体会成为SDK听众注册的目标吗？
+        # 所有同行都可以产生事件但应用程序通常只需要连接到一个来监听事件。默认值：true
+        eventSource: true
+
+      peer0.org2.example.com:
+        endorsingPeer: true
+        chaincodeQuery: false
+        ledgerQuery: true
+        eventSource: false
+
+    # [Optional]. what chaincodes are expected to exist on this channel? The application can use
+    # this information to validate that the target peers are in the expected state by comparing
+    # this list with the query results of getInstalledChaincodes() and getInstantiatedChaincodes()
+    #
+    # 预计这个渠道会存在哪些链码？
+    # 该应用程序可以使用该信息通过比较验证目标对等体是否处于预期状态，
+    # 此列表包含getInstalledChaincodes()和getInstantiatedChaincodes()的查询结果。
+    chaincodes:
+      # the format follows the "cannonical name" of chaincodes by fabric code
+      - example02:v1
+      - marbles:1.0
+
+#
+# list of participating organizations in this network
+# 此网络中参与组织的列表
+#
+organizations:
+  Org1:
+    mspid: Org1MSP
+
+    peers:
+      - peer0.org1.example.com
+      - peer1.org1.example.com
+
+    # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
+    # network. Typically certificates provisioning is done in a separate process outside of the 
+    # runtime network. Fabric-CA is a special certificate authority that provides a REST APIs for 
+    # dynamic certificate management (enroll, revoke, re-enroll). The following section is only for 
+    # Fabric-CA servers.
+    #
+    # 证书颁发机构在基于Fabric的网络中颁发用于标识的证书。
+    # 通常，证书供应是在运行时网络之外的单独进程中完成的。 
+    # Fabric-CA是一种特殊的证书颁发机构，为动态证书管理（注册，撤销，重新注册）提供REST API。 
+    # 以下部分仅适用于Fabric-CA服务器。
+    certificateAuthorities:
+      - ca-org1
+
+    # [Optional]. If the application is going to make requests that are reserved to organization 
+    # administrators, including creating/updating channels, installing/instantiating chaincodes, it 
+    # must have access to the admin identity represented by the private key and signing certificate. 
+    # Both properties can be the PEM string or local path to the PEM file. Note that this is mainly for
+    # convenience in development mode, production systems should not expose sensitive information
+    # this way. The SDK should allow applications to set the org admin identity via APIs, and only use
+    # this route as an alternative when it exists.
+    #
+    # 如果应用程序要向组织管理员发出保留请求，
+    # 包括创建/更新通道，安装/实例化链代码，则必须能够访问由私钥和签名证书表示的管理员标识。
+    # 这两个属性都可以是PEM字符串或PEM文件的本地路径。 
+    # 注意，这主要是为了方便开发模式，生产系统不应该以这种方式暴露敏感信息。 
+    # SDK应该允许应用程序通过API设置组织管理员身份，并且只有在存在时才使用此路由作为替代。
+    adminPrivateKey: 
+      pem: "-----BEGIN PRIVATE KEY----- <etc>"
+    signedCert:
+      path: "/tmp/somepath/signed-cert.pem"
+
+  # the profile will contain public information about organizations other than the one it belongs to. 
+  # These are necessary information to make transaction lifecycles work, including MSP IDs and 
+  # peers with a public URL to send transaction proposals. The file will not contain private 
+  # information reserved for members of the organization, such as admin key and certificate, 
+  # fabric-ca registrar enroll ID and secret, etc.
+  #
+  # 该配置文件将包含有关其所属组织以外的组织的公共信息。 
+  # 这些是使交易生命周期起作用的必要信息，包括MSP ID和具有公共URL的同行以发送交易提议。 
+  # 该文件不包含为组织成员保留的私人信息，例如管理密钥和证书，fabric-ca注册商注册ID和机密等。
+  Org2:
+    mspid: Org2MSP
+    peers:
+      - peer0.org2.example.com
+
+#
+# List of orderers to send transaction and channel create/update requests to. For the time
+# being only one orderer is needed. If more than one is defined, which one get used by the
+# SDK is implementation specific. Consult each SDK's documentation for its handling of orderers.
+#
+# 发送交易和渠道创建/更新请求的订购者列表。 目前只需要一个订货人。 
+# 如果定义了多个，则SDK使用哪一个是特定于实现的。 
+# 有关处理订货人的信息，请参阅每个SDK的文档。
+orderers:
+  orderer.example.com:
+    url: grpcs://localhost:7050
+
+    # these are standard properties defined by the gRPC library
+    # they will be passed in as-is to gRPC client constructor
+    #
+    # 这些是gRPC库定义的标准属性，他们将按原样传递给gRPC客户端构造函数
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      grpc-max-send-message-length: 15
+
+    tlsCACerts:
+      pem: "-----BEGIN CERTIFICATE----- <etc> "
+
+#
+# List of peers to send various requests to, including endorsement, query
+# and event listener registration.
+#
+# 发送各种请求的对等方列表，包括认可，查询和事件监听器注册。
+peers:
+  peer0.org1.example.com:
+    # this URL is used to send endorsement and query requests
+    # 此URL用于发送认可和查询请求
+    url: grpcs://localhost:7051
+
+    # this URL is used to connect the EventHub and registering event listeners
+    # 此URL用于连接EventHub和注册事件侦听器
+    eventUrl: grpcs://localhost:7053
+
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      grpc.http2.keepalive_time: 15
+
+    tlsCACerts:
+      # Comma-Separated list of paths
+      path: peer0.org1.example.com/tlscacerts/org1.example.com-cert.pem
+
+  peer0.org2.example.com:
+    url: grpcs://localhost:8051
+    eventUrl: grpcs://localhost:8053
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+    tlsCACerts:
+      # Comma-Separated list of paths
+      path: peer0.org2.example.com/tlscacerts/org2.example.com-cert.pem
+
+#
+# Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows 
+# certificate management to be done via REST APIs. Application may choose to use a standard 
+# Certificate Authority instead of Fabric-CA, in which case this section would not be specified.
+#
+# Fabric-CA是Hyperledger Fabric提供的一种特殊证书授权，允许通过REST API完成证书管理。 
+# 应用程序可以选择使用标准证书颁发机构而不是Fabric-CA，在这种情况下，不会指定此部分。
+certificateAuthorities:
+  ca-org1:
+    url: https://localhost:7054
+    #
+    # the properties specified under this object are passed to the 'http' client verbatim when
+    # making the request to the Fabric-CA server
+    #
+    # 在此对象下指定的属性将逐字传递给'http'客户端向Fabric-CA服务器发出请求。
+    httpOptions:
+      verify: true
+    tlsCACerts:
+      # Comma-Separated list of paths
+      path: peerOrganizations/org1.example.com/ca/org1.example.com-cert.pem
+      # Client key and cert for TLS mutual auth with Fabric CA. If the target Fabric CA server
+      # does not have TLS mutual auth turned on, then this section is not needed
+      #
+      # 与Fabric CA的TLS相互身份验证的客户端密钥和证书。
+      # 如果是目标Fabric CA服务器没有打开TLS相互身份验证，则不需要此部分。
+      client:
+        keyfile: path/to/tls/fabricca/certs/client/client_fabric_client-key.pem
+        certfile: path/to/tls/fabricca/certs/client/client_fabric_client.pem
+
+
+    # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is 
+    # needed to enroll and invoke new users.
+    #
+    # Fabric-CA支持通过REST API进行动态用户注册。“root”用户，a.k.a注册商，是需要注册和调用新用户。
+    registrar:
+       enrollId: admin
+       enrollSecret: adminpw
+    # [Optional] The optional name of the CA.
+    caName: caNameHere
